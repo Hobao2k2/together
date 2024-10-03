@@ -1,0 +1,16 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+spring:
+  datasource:
+    url: "jdbc:mysql://localhost:3306/together"
+    username: root
+    password: baonam1208
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+jwt:
+  signerKey: "6kulWBrSMOgT7JFU74+i9YsRQk9bbGh3GqeMd0i4chO4X1wnqRxGjm0AyiMI0zke"
+
