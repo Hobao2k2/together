@@ -30,6 +30,7 @@ public class UserService {
             throw new AppException(ErrorCode.USER_EXISTED);
 
         User user = userMapper.toUser(request);
+        System.out.println(user.getGender() + " " + user.getEmail());
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 

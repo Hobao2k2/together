@@ -16,19 +16,12 @@ import java.time.LocalDate;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class Article {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
-    private String email;
-    private String username;
-    private String password;
-    private LocalDate dob;
-    private String phone;
-    private String gender;
-    private String bios;
-    private String avatar_path;
-    private String wallpaper_path;
-    private LocalDate created_at;
-    private int is_active;
+    private String user_id;
+    private String content;
+    private LocalDate time;
+    private String access;
 }

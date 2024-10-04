@@ -1,0 +1,16 @@
+package com.example.together.dto.request;
+
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+
+@FieldDefaults(level = AccessLevel.PRIVATE)
+public class ArticleRequest {
+    String id;
+    String token;
+}
