@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Alert, Image } from 'react-native';
-import { loginApi } from '../api/authApi';  
+import { loginApi } from '../../../api/authapi';  
 import styles from './loginstyle';
 
 const LoginScreen = ({ navigation }) => {
@@ -21,7 +21,7 @@ const LoginScreen = ({ navigation }) => {
         <View style={styles.container}>
             <View style={styles.headerlogo}>
             <Image
-                source={require('../../../../assets/image/together.png')} // Đảm bảo đường dẫn đúng và có phần mở rộng .png
+                source={require('../../../../assets/image/together.png')}
                 style={styles.logo}
             />
             </View>

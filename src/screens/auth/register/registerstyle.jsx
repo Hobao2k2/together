@@ -1,0 +1,50 @@
+import { StyleSheet } from 'react-native';
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        padding: 20,
+        backgroundColor: '#fff',
+    },
+    headerlogo: {
+        flex: 1,
+    },
+    headerlogin: {
+        flex: 3,
+    },
+    logo: {
+        fontSize: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    input: {
+        height: 50,
+        borderColor: '#ccc',
+        borderWidth: 1,
+        borderRadius: 10,
+        marginVertical: 10,
+        paddingHorizontal: 15,
+    },
+    button: {
+        backgroundColor: '#28a745',  
+        paddingVertical: 15,
+        borderRadius: 10,
+        marginVertical: 10,
+    },
+    buttonText: {
+        color: '#fff',
+        textAlign: 'center',
+        fontWeight: 'bold',
+    },
+    registerContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginVertical: 20,
+    },
+    registerText: {
+        color: '#28a745',
+    },
+});
+
+export default styles;
