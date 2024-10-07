@@ -1,5 +1,7 @@
 package com.example.together.service;
 
+import com.example.together.dto.request.OTPRequest;
+import com.example.together.dto.request.UpdatePasswordRequest;
 import com.example.together.dto.request.UserCreationRequest;
 import com.example.together.dto.request.UserUpdateRequest;
 import com.example.together.dto.response.UserResponse;
@@ -11,7 +13,6 @@ import com.example.together.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class UserService {
     UserMapper userMapper;
 
     public UserResponse createUser(UserCreationRequest request){
-        if (userRepository.existsByUsername(request.getUsername()))
+        if (userRepository.existsByEmail(request.getEmail()))
             throw new AppException(ErrorCode.USER_EXISTED);
 
         User user = userMapper.toUser(request);
@@ -57,5 +58,18 @@ public class UserService {
     public UserResponse getUser(String id){
         return userMapper.toUserResponse(userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found")));
+    }
+
+
+    public UserResponse updatePassword(String id, UpdatePasswordRequest request){
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
+        if(request.getPassword().equals(request.getConfirmPassword())){
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            return userMapper.toUserResponse(userRepository.save(user));
+        }else{
+            throw new AppException(ErrorCode.NOT_EQUAL_PASSWORD);
+        }
     }
 }

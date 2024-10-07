@@ -8,6 +8,10 @@ public enum ErrorCode {
     INVALID_PASSWORD(1004, "Password must be at least 8 characters"),
     USER_NOT_EXISTED(1005, "User not existed"),
     UNAUTHENTICATED(1006, "Unauthenticated"),
+
+    INVALID_OTP(1007,"Invalid otp"),
+    OTP_EXPIRED(1008,"OTP Expired"),
+    NOT_EQUAL_PASSWORD(1009,"Password and confirm password are not the same"),
     ;
 
     ErrorCode(int code, String message) {
