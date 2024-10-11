@@ -9,14 +9,15 @@ const styles = StyleSheet.create({
     },
     headerlogo: {
         flex: 1,
-    },
-    headerlogin: {
-        flex: 3,
-    },
-    logo: {
-        fontSize: 24,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    headerlogin: {
+        flex: 2,
+    },
+    logo: {
+        width: 100,
+        height: 100,
     },
     input: {
         height: 50,
