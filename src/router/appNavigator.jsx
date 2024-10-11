@@ -1,41 +1,66 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from '../screens/HomeScreen';
-import AddPostScreen from '../screens/AddPostScreen';
-import EditPostScreen from '../screens/EditPostScreen';
-import LoginScreen from '../screens/LoginScreen';
-import RegisterScreen from '../screens/RegisterScreen';
+import HomeScreen from '../screens/home/mainhome/homescreen';
+import AddPostScreen from '../screens/home/addpost/addpostscreen';
+import LoginScreen from '../screens/auth/login/loginscreen';
+import RegisterScreen from '../screens/auth/register/registerscreen';
+import ForgotPasswordScreen from '../screens/auth/forgotpassword/forgotpasswordscreen';
+import OtpScreen from '../screens/auth/forgotpassword/otpscreen';
+import ResetPasswordScreen from '../screens/auth/forgotpassword/resetpasswordscreen';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function AuthStack() {
+// Tab Navigator cho các màn hình chính sau khi đăng nhập
+function HomeTabNavigator() {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
-    </Stack.Navigator>
+    <Tab.Navigator>
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="AddPost" component={AddPostScreen} />
+    </Tab.Navigator>
   );
 }
 
-function HomeStack() {
+// Stack Navigator cho các màn hình đăng nhập và đăng ký
+function AuthStackNavigator({ setIsLoggedIn }) {
   return (
-    <Stack.Navigator>
-      <Stack.Screen name="Home" component={HomeScreen} />
-      <Stack.Screen name="AddPost" component={AddPostScreen} />
-      <Stack.Screen name="EditPost" component={EditPostScreen} />
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login">
+        {(props) => <LoginScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+      </Stack.Screen>
+      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+      <Stack.Screen name="OtpScreen" component={OtpScreen} />
+      <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen} />
     </Stack.Navigator>
   );
 }
 
 function AppNavigator() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);  
+
   return (
-    <Tab.Navigator>
-      <Tab.Screen name="Auth" component={AuthStack} options={{ title: 'Đăng nhập' }} />
-      <Tab.Screen name="Home" component={HomeStack} options={{ title: 'Trang chủ' }} />
-    </Tab.Navigator>
+    <>
+      {isLoggedIn ? (
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="HomeTabs" component={HomeTabNavigator} />
+          <Stack.Screen name="AddPost" component={AddPostScreen} />
+        </Stack.Navigator>
+      ) : (
+        <AuthStackNavigator setIsLoggedIn={setIsLoggedIn} />  
+      )}
+    </>
   );
 }
+
+// function AppNavigator() {
+//   return (
+//       <Stack.Navigator screenOptions={{ headerShown: false }}>
+//         {/* Màn hình Home được đặt là màn hình mặc định */}
+//         <Stack.Screen name="HomeTabs" component={HomeTabNavigator} />
+//       </Stack.Navigator>
+//   );
+// }
 
 export default AppNavigator;
