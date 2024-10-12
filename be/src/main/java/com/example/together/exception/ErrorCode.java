@@ -12,6 +12,9 @@ public enum ErrorCode {
     INVALID_OTP(1007,"Invalid otp"),
     OTP_EXPIRED(1008,"OTP Expired"),
     NOT_EQUAL_PASSWORD(1009,"Password and confirm password are not the same"),
+    INVALID_USER(1010, "User invalid"),
+    INVALID_REQUEST(1011, "Friend request has been sent before"),
+    OTP_USED(1012,"has been used"),
     ;
 
     ErrorCode(int code, String message) {

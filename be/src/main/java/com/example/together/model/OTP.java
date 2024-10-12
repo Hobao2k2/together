@@ -17,9 +17,12 @@ public class OTP {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String otp;
-    @OneToOne
-    @JoinColumn(name="user_id",referencedColumnName = "id")
+    private Boolean isUsed;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
     private LocalDateTime expiryDate;
+    private LocalDateTime createAt;
 
 }

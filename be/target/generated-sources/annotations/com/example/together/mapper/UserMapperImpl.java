@@ -2,8 +2,12 @@ package com.example.together.mapper;
 
 import com.example.together.dto.request.UserCreationRequest;
 import com.example.together.dto.request.UserUpdateRequest;
+import com.example.together.dto.response.RelationshipResponse;
 import com.example.together.dto.response.UserResponse;
+import com.example.together.model.Relationship;
 import com.example.together.model.User;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import javax.annotation.processing.Generated;
 import org.springframework.stereotype.Component;
 
@@ -38,10 +42,10 @@ public class UserMapperImpl implements UserMapper {
 
         UserResponse.UserResponseBuilder userResponse = UserResponse.builder();
 
+        userResponse.friendshipsInitiated( relationshipSetToRelationshipResponseSet( user.getFriendshipsInitiated() ) );
         userResponse.id( user.getId() );
         userResponse.email( user.getEmail() );
         userResponse.username( user.getUsername() );
-        userResponse.password( user.getPassword() );
         userResponse.dob( user.getDob() );
 
         return userResponse.build();
@@ -56,5 +60,33 @@ public class UserMapperImpl implements UserMapper {
         user.setUsername( request.getUsername() );
         user.setPassword( request.getPassword() );
         user.setDob( request.getDob() );
+    }
+
+    protected RelationshipResponse relationshipToRelationshipResponse(Relationship relationship) {
+        if ( relationship == null ) {
+            return null;
+        }
+
+        RelationshipResponse.RelationshipResponseBuilder relationshipResponse = RelationshipResponse.builder();
+
+        relationshipResponse.id( relationship.getId() );
+        relationshipResponse.user2( toUserResponse( relationship.getUser2() ) );
+        relationshipResponse.status( relationship.getStatus() );
+        relationshipResponse.createdAt( relationship.getCreatedAt() );
+
+        return relationshipResponse.build();
+    }
+
+    protected Set<RelationshipResponse> relationshipSetToRelationshipResponseSet(Set<Relationship> set) {
+        if ( set == null ) {
+            return null;
+        }
+
+        Set<RelationshipResponse> set1 = new LinkedHashSet<RelationshipResponse>( Math.max( (int) ( set.size() / .75f ) + 1, 16 ) );
+        for ( Relationship relationship : set ) {
+            set1.add( relationshipToRelationshipResponse( relationship ) );
+        }
+
+        return set1;
     }
 }

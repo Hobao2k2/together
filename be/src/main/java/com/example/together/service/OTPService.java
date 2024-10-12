@@ -26,40 +26,49 @@ public class OTPService {
     UserRepository userRepository;
     JavaMailSender mailSender;
 
-    public String sendOTP(String email){
+    public String sendOTP(String email) {
         var user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        String otp=String.format("%06d", new Random().nextInt(999999));
-        OTP otpEntity=OTP.builder().otp(otp).user(user).expiryDate(LocalDateTime.now().plusMinutes(5)).build();
+        String otp = generateUniqueOTP();
+        OTP otpEntity = OTP.builder().otp(otp).user(user).isUsed(false).createAt(LocalDateTime.now())
+                .expiryDate(LocalDateTime.now().plusMinutes(2)).build();
         otpRepository.save(otpEntity);
-        OTPRequest otpRequest=new OTPRequest(email,otp);
+        OTPRequest otpRequest = new OTPRequest(email, otp);
         sendOTPEmail(otpRequest);
         return "da gui otp";
     }
 
-    public String verifyOTP(String otpRequest){
-        var otp = otpRepository.findByOtp(otpRequest)
+    public String verifyOTP(String otpRequest) {
+        var otpEntity = otpRepository.findByOtp(otpRequest)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_OTP));
-        if (otp.getExpiryDate().isAfter(LocalDateTime.now())) {
+        var user = otpEntity.getUser();
+        var otp = otpRepository.findFirstByUserAndIsUsedFalseOrderByExpiryDateDesc(user)
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_OTP));
+        if (!otpRequest.equals(otp.getOtp())) {
+            throw new AppException(ErrorCode.INVALID_OTP);
+        } else if (otp.getExpiryDate().isAfter(LocalDateTime.now())) {
             var userId = otp.getUser().getId();
-            delete(otp.getId());
+            otp.setIsUsed(true);
+            otpRepository.save(otp);
             return userId;
         } else {
-            delete(otp.getId());
             throw new AppException(ErrorCode.OTP_EXPIRED);
         }
-
     }
 
-    private void sendOTPEmail(OTPRequest request){
-        SimpleMailMessage simpleMailMessage=new SimpleMailMessage();
+    private void sendOTPEmail(OTPRequest request) {
+        SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
         simpleMailMessage.setTo(request.getEmail());
         simpleMailMessage.setSubject("Together send OTP Code ");
-        simpleMailMessage.setText("Your OTP code is: " + request.getOtp() + ". It will expire in 5 minutes.");
+        simpleMailMessage.setText("Your OTP code is: " + request.getOtp() + ". It will expire in 2 minutes.");
         mailSender.send(simpleMailMessage);
     }
 
-    private void delete(Long id){
-        otpRepository.deleteById(id);
+    private String generateUniqueOTP() {
+        String otp;
+        do {
+            otp = String.format("%06d", new Random().nextInt(999999));
+        } while (otpRepository.existsByOtpAndIsUsedTrue(otp));
+        return otp;
     }
 
 }

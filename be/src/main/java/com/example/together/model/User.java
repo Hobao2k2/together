@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -21,6 +25,12 @@ public class User {
     private String username;
     private String password;
     private LocalDate dob;
-    @OneToOne(mappedBy = "user")
-    private OTP otp;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<OTP> otps = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user1",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private Set<Relationship> friendshipsInitiated = new HashSet<>();
+
+    @OneToMany(mappedBy = "user2",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private Set<Relationship> friendshipsReceived = new HashSet<>();
 }

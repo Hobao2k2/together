@@ -39,7 +39,7 @@ public class UserService {
 
     public UserResponse updateUser(String userId, UserUpdateRequest request) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_USER));
 
         userMapper.updateUser(user, request);
 
@@ -57,19 +57,14 @@ public class UserService {
 
     public UserResponse getUser(String id){
         return userMapper.toUserResponse(userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found")));
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_USER)));
     }
 
 
     public UserResponse updatePassword(String id, UpdatePasswordRequest request){
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_USER));
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
-        if(request.getPassword().equals(request.getConfirmPassword())){
-            user.setPassword(passwordEncoder.encode(request.getPassword()));
             return userMapper.toUserResponse(userRepository.save(user));
-        }else{
-            throw new AppException(ErrorCode.NOT_EQUAL_PASSWORD);
-        }
     }
 }

@@ -1,9 +1,11 @@
 package com.example.together.dto.response;
 
+import com.example.together.model.Relationship;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -14,6 +16,6 @@ public class UserResponse {
     String id;
     String email;
     String username;
-    String password;
     LocalDate dob;
+    Set<RelationshipResponse> friendshipsInitiated;
 }
