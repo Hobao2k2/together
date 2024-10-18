@@ -1,42 +1,29 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'http://172.17.208.1:8080/api';
+const BASE_URL = 'http://14.225.254.35:8080/api';
 
 export const loginApi = async (email, password) => {
   try {
-    // Gửi yêu cầu đăng nhập với tiêu đề Content-Type là application/json
-    const response = await axios.post(
-      `${BASE_URL}/auth/token`,
-      {
-        email: email,
-        password: password,
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',  
-        },
-      }
-    );
+    const response = await axios.post(`${BASE_URL}/auth/token`, { email, password });
+    
+    console.log('Phản hồi từ API đăng nhập:', response.data);
 
-    // Kiểm tra phản hồi từ server
     if (response.data.code === 1000 && response.data.result.authenticated) {
-      const { token } = response.data.result;
+      const token = response.data.result.token;
+      const userId = response.data.result.id; // Lấy userId từ result.id
 
-      // Lưu token vào AsyncStorage để sử dụng cho các yêu cầu tiếp theo
+      // Lưu token và userId vào AsyncStorage
       await AsyncStorage.setItem('userToken', token);
+      await AsyncStorage.setItem('userId', userId);
 
-      return { success: true, token };  // Trả về thông tin thành công và token
+      return { success: true, token, userId }; // Trả về token và userId
     } else {
       throw new Error('Xác thực thất bại');
     }
   } catch (error) {
-    // Xử lý lỗi, hiển thị thông báo cụ thể từ server nếu có
-    if (error.response && error.response.data.message) {
-      throw new Error(`Lỗi từ server: ${error.response.data.message}`);
-    } else {
-      throw new Error('Không thể kết nối đến máy chủ');
-    }
+    console.log('Lỗi đăng nhập:', error.response ? error.response.data : error.message);
+    throw new Error('Không thể kết nối đến máy chủ');
   }
 };
 

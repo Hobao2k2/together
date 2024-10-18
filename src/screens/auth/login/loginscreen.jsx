@@ -3,32 +3,50 @@ import { View, TextInput, TouchableOpacity, Text, Alert, Image } from 'react-nat
 import { loginApi } from '../../../api/authapi';  
 import styles from './loginstyle';
 
-const LoginScreen = ({ navigation, setIsLoggedIn }) => {
+const LoginScreen = ({ navigation, setIsLoggedIn, setUserId }) => {  // Thêm setUserId để lưu lại userId sau khi đăng nhập
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-  
+
     const handleLogin = async () => {
         if (!email || !password) {
-          return Alert.alert('Lỗi', 'Vui lòng nhập email và mật khẩu');
+            return Alert.alert('Lỗi', 'Vui lòng nhập email và mật khẩu');
         }
       
         try {
-          const response = await loginApi(email, password);
-          // Nếu đăng nhập thành công, cập nhật trạng thái đăng nhập
-          Alert.alert('Thành công', 'Đăng nhập thành công');
-          setIsLoggedIn(true);  // Cập nhật trạng thái đăng nhập để chuyển sang màn hình chính
-        //   navigation.navigate('Home');  // Điều hướng đến màn hình chính sau khi đăng nhập
+            // Gọi API đăng nhập
+            const response = await loginApi(email, password);
+        
+            // Kiểm tra và log lại phản hồi để đảm bảo đúng
+            console.log('Phản hồi từ API đăng nhập:', response);
+        
+            // Lấy userId từ response
+            const userId = response.userId; // Lấy userId từ phản hồi
+        
+            if (!userId) {
+                throw new Error('Không tìm thấy ID người dùng trong phản hồi');
+            }
+        
+            Alert.alert('Thành công', 'Đăng nhập thành công');
+            
+            // Cập nhật trạng thái đăng nhập
+            setIsLoggedIn(true);
+            setUserId(userId); // Lưu userId để dùng sau này
+        
+            // Điều hướng đến màn hình Profile và truyền userId
+            navigation.navigate('Profile', { userId });
+        
         } catch (error) {
-          console.log('Lỗi đăng nhập:', error);  // Log lỗi chi tiết ra console
+          console.log('Lỗi đăng nhập:', error);
+      
           if (error.response) {
-            console.log('Chi tiết lỗi từ server:', error.response.data);  // Log chi tiết lỗi từ phản hồi server
+            console.log('Chi tiết lỗi từ server:', error.response.data);
             Alert.alert('Lỗi', `Đăng nhập thất bại: ${error.response.data.message || 'Lỗi không xác định từ server'}`);
           } else {
             Alert.alert('Lỗi', `Đăng nhập thất bại: ${error.message || 'Không thể kết nối đến server'}`);
           }
         }
-    };      
-  
+    };             
+
     return (
         <View style={styles.container}>
             <View style={styles.headerlogo}>
