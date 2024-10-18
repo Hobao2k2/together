@@ -1,54 +1,54 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      padding: 10,
-    },
-    postContainer: {
-      padding: 15,
-      marginVertical: 10,
-      borderRadius: 10,
-      backgroundColor: '#f8f9fa',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.3,
-      shadowRadius: 1,
-      elevation: 3,
-    },
-    title: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      marginBottom: 5,
-    },
-    content: {
-      fontSize: 14,
-      color: '#333',
-      marginBottom: 10,
-    },
-    image: {
-      width: 100,
-      height: 100,
-      marginRight: 10,
-    },
-    actions: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginTop: 10,
-    },
-    addButton: {
-      position: 'absolute',
-      bottom: 20,
-      right: 20,
-      backgroundColor: 'tomato',
-      borderRadius: 50,
-      padding: 15,
-    },
-    addButtonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: 'bold',
-    },
+  container: {
+    flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  contentContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  contentText: {
+    fontSize: 24,
+    color: '#333',
+  },
+  tabBarContainer: {
+    flexDirection: 'row',
+    height: 56,
+    width: width,
+    backgroundColor: '#fff',
+    borderTopWidth: 2,
+    borderTopColor: '#ddd',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  tabButton: {
+    alignItems: 'center',
+  },
+  tabText: {
+    fontSize: 10,
+    color: '#777',
+    marginTop: 4,
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: 28,
+    alignSelf: 'center',
+  },
+  fabButton: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: '#007aff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+  },
 });
 
 export default styles;
