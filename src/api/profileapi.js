@@ -60,40 +60,59 @@ export const updateProfileApi = async (profileData) => {
   }
 };
 
-export const uploadImageApi = async (imageUri, type) => {
+// export const uploadImageApi = async () => {
+//   try {
+//     const { userId, token } = await getUserCredentials(); // Lấy thông tin người dùng
+
+//     // Đọc dữ liệu từ tệp tin và chuyển đổi thành nhị phân
+//     // const imageData = await RNFS.readFile(imageUri, 'base64'); // Đọc file dưới dạng base64
+//     // Chuẩn bị FormData để upload
+//     const formData = new FormData();
+    
+//     formData.append('image', {
+//       uri: imageUri,  // Đường dẫn tới tệp trên thiết bị
+//       name: 'photo.jpg',  // Tên tệp
+//       type: 'image/jpeg'  // Loại file, có thể thay đổi nếu không phải là JPEG
+//     });
+
+//     const response = await axios.post(`${BASE_URL}/users/${userId}/upload-image`, formData, {
+//       headers: {
+//         Authorization: `Bearer ${token}`,
+//         'Content-Type': 'multipart/form-data',
+//       },
+//     });
+
+//     return response.data; 
+//   } catch (error) {
+//     const errorMessage = handleError(error); 
+//     throw new Error(errorMessage);
+//   }
+// };
+
+export const uploadImageApi = async (photo, type) => {
+
+  const { userId, token } = await getUserCredentials(); // Lấy thông tin người dùng
+
   const formData = new FormData();
+
   formData.append('image', {
-    uri: imageUri,
-    type: 'image/jpeg', // MIME type của ảnh
-    name: `${type}.jpg`, // Đặt tên file
+    uri: photo.uri,
+    name: photo.fileName || `photo_${Date.now()}.jpg`,  // Đảm bảo tên file không rỗng
+    type: photo.type || 'image/jpeg',  // Đảm bảo định dạng MIME
   });
-  formData.append('type', type);  // "avatar" hoặc "wallpaper"
+
+  formData.append('type', type);
 
   try {
-    const { userId, token } = await getUserCredentials();  // Lấy thông tin người dùng
-
     const response = await axios.post(`${BASE_URL}/users/${userId}/upload-image`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
-        Authorization: `Bearer ${token}`,  // Gửi token trong header
       },
     });
-
     return response.data;
   } catch (error) {
-    if (error.response) {
-      // Server trả về lỗi
-      console.error('Lỗi từ server:', error.response.data);
-      throw new Error(`Không thể upload ${type}: ${error.response.data.message || 'Lỗi không xác định từ server'}`);
-    } else if (error.request) {
-      // Yêu cầu được gửi nhưng không nhận được phản hồi
-      console.error('Không có phản hồi từ server:', error.request);
-      throw new Error('Không có phản hồi từ server. Kiểm tra lại kết nối mạng.');
-    } else {
-      // Một lỗi xảy ra khi thiết lập yêu cầu
-      console.error('Lỗi khi tạo yêu cầu:', error.message);
-      throw new Error(`Lỗi khi upload ${type}: ${error.message}`);
-    }
+    console.error('Upload failed:', error.response ? error.response.data : error.message);
+    throw error;
   }
 };
 

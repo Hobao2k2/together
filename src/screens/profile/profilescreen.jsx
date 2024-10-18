@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView, ActivityIndicator, Modal, Button } from 'react-native';
+import { View, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView, ActivityIndicator, Modal } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import LinearGradient from 'react-native-linear-gradient';
 import { getUserInfoApi, updateProfileApi, uploadImageApi } from '../../api/profileapi';
@@ -20,98 +20,87 @@ const ProfileScreen = ({ route, userId, navigation }) => {
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const response = await getUserInfoApi(userIdFromRoute);
-        const userInfo = response.result;
-        setProfile({
-          username: userInfo.username,
-          bios: userInfo.bios || '',
-          avatar_path: userInfo.avatar_path || '',
-          wallpaper_path: userInfo.wallpaper_path || '',
-          phone: userInfo.phone || '',
-          gender: userInfo.gender || '',
-          dob: userInfo.dob || '',
-        });
-        setEditableProfile({
-          username: userInfo.username,
-          bios: userInfo.bios || '',
-          phone: userInfo.phone || '',
-          gender: userInfo.gender || '',
-          dob: userInfo.dob || '',
-        });
-      } catch (error) {
-        console.error('Lỗi khi lấy thông tin người dùng:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Hàm để tải lại thông tin từ API
+  const fetchProfile = async () => {
+    try {
+      const response = await getUserInfoApi(userIdFromRoute);
+      const userInfo = response.result;
+      setProfile({
+        username: userInfo.username,
+        bios: userInfo.bios || '',
+        avatar_path: userInfo.avatar_path || '',
+        wallpaper_path: userInfo.wallpaper_path || '',
+        phone: userInfo.phone || '',
+        gender: userInfo.gender || '',
+        dob: userInfo.dob || '',
+      });
+      setEditableProfile({
+        username: userInfo.username,
+        bios: userInfo.bios || '',
+        phone: userInfo.phone || '',
+        gender: userInfo.gender || '',
+        dob: userInfo.dob || '',
+      });
+    } catch (error) {
+      console.error('Lỗi khi lấy thông tin người dùng:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchProfile();
+  useEffect(() => {
+    fetchProfile();  // Gọi hàm fetchProfile khi component mount
   }, [userIdFromRoute]);
 
-  const handleUploadImage = (type) => {
+  const [photo, setPhoto] = useState(null);
+  const [type, setType] = useState('avatar');
+
+  // Hàm để upload ảnh
+  const handleUploadImage = async (imageType) => {
     const options = {
       mediaType: 'photo',
-      quality: 1,
     };
-  
+
     launchImageLibrary(options, async (response) => {
-      if (response.didCancel) {
-        Alert.alert('Thông báo', 'Bạn đã hủy chọn ảnh');
-      } else if (response.errorCode) {
-        Alert.alert('Lỗi', `Lỗi khi chọn ảnh: ${response.errorMessage}`);
-      } else if (response.assets) {
-        const imageUri = response.assets[0].uri;
-        
-        // Chuẩn bị FormData để upload
-        const formData = new FormData();
-        formData.append('image', {
-          uri: imageUri,  // Đường dẫn tới tệp trên thiết bị
-          name: 'photo.jpg',  // Tên tệp
-          type: 'image/jpeg'  // Loại file, có thể thay đổi nếu không phải là JPEG
-        });
-        formData.append('type', type);  // Gửi loại ảnh (avatar hoặc wallpaper)
-  
+      if (response.assets && response.assets.length > 0) {
+        const selectedImage = response.assets[0];
+        setPhoto(selectedImage);
+
         try {
-          const result = await uploadImageApi(userIdFromRoute, formData);  // Gọi API upload
-  
-          if (type === 'avatar') {
-            setProfile({ ...profile, avatar_path: imageUri });
-            Alert.alert('Thành công', 'Ảnh đại diện đã được cập nhật');
-          } else if (type === 'wallpaper') {
-            setProfile({ ...profile, wallpaper_path: imageUri });
-            Alert.alert('Thành công', 'Hình nền đã được cập nhật');
-          }
+          await uploadImageApi(selectedImage, imageType);  // Truyền type vào
+          Alert.alert('Thành công', 'Ảnh đã được upload thành công!');
+          fetchProfile();  // Làm mới thông tin sau khi upload ảnh
         } catch (error) {
-          console.error(`Lỗi khi upload ${type}:`, error);
-          Alert.alert('Lỗi', `Không thể upload ${type}`);
+          const errorMessage = error.response ? error.response.data : error.message;
+          Alert.alert('Lỗi', `Upload ảnh thất bại! Lỗi: ${errorMessage}`);
+          console.error('Upload failed:', error);
         }
+      } else {
+        Alert.alert('Thông báo', 'Bạn chưa chọn ảnh nào.');
       }
     });
-  };  
+  };
 
+  // Hàm để cập nhật thông tin cá nhân
   const handleUpdateProfile = async () => {
     try {
       const updatedProfileData = {
-        username: editableProfile.username,  
-        phone: editableProfile.phone,        
-        gender: editableProfile.gender,      
-        bios: editableProfile.bios,          
-        dob: editableProfile.dob,            
+        username: editableProfile.username,
+        phone: editableProfile.phone,
+        gender: editableProfile.gender,
+        bios: editableProfile.bios,
+        dob: editableProfile.dob,
       };
-  
+
       await updateProfileApi(updatedProfileData);
-      setProfile({ ...profile, bios: editableProfile.bios });  // Cập nhật profile với bios mới
       Alert.alert('Thành công', 'Thông tin cá nhân đã được cập nhật');
+      fetchProfile();  // Làm mới thông tin sau khi cập nhật thành công
+      setModalVisible(false);  // Đóng modal sau khi cập nhật
     } catch (error) {
       console.error('Lỗi khi cập nhật thông tin cá nhân:', error);
       Alert.alert('Lỗi', 'Không thể cập nhật thông tin cá nhân');
     }
   };
-  
-  
 
   if (loading) {
     return (
