@@ -1,82 +1,127 @@
 import axios from 'axios';
-import RNFS from 'react-native-fs';
-import { zip } from 'react-native-zip-archive';
-import uuid from 'react-native-uuid';
+import { getUserCredentials } from './profileapi'; 
 
-// URL của API backend
-const API_BASE_URL = '';
-
-// Hàm lấy danh sách bài viết
-export const fetchPosts = async () => {
+// Lấy danh sách bài viết của người dùng
+export const getArticles = async (page, articlesPerPage) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/posts`);
+    const { userId, token } = await getUserCredentials(); 
+
+    const response = await axios.get(
+      `http://14.225.254.35:8080/api/article/${userId}/get-articles/${page}/${articlesPerPage}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, 
+        },
+      }
+    );
+    
     return response.data;
   } catch (error) {
-    console.error('Failed to fetch posts:', error);
+    console.error('Error fetching articles:', error);
     throw error;
   }
 };
 
-// Hàm xóa bài viết theo id
-export const deletePost = async (postId) => {
+// Thêm bài viết mới
+export const addArticle = async (content, accessStatus, imageFile, videoFile) => {
   try {
-    await axios.delete(`${API_BASE_URL}/posts/${postId}`);
-  } catch (error) {
-    console.error('Failed to delete post:', error);
-    throw error;
-  }
-};
+    const { userId, token } = await getUserCredentials(); 
 
-// Hàm đăng bài viết mới
-export const submitPost = async (title, content, images, video) => {
-  try {
-    // Tạo thư mục tạm để lưu file
-    const tempDir = `${RNFS.DocumentDirectoryPath}/${uuid.v4()}`;
-    await RNFS.mkdir(tempDir);
-
-    // Lưu file text cho bài viết
-    const textFilePath = `${tempDir}/post.txt`;
-    const postContent = `Title: ${title}\nContent: ${content}`;
-    await RNFS.writeFile(textFilePath, postContent, 'utf8');
-
-    // Sao chép ảnh vào thư mục tạm
-    const mediaFiles = [textFilePath];
-    for (const image of images) {
-      const imageDestPath = `${tempDir}/${image.fileName}`;
-      await RNFS.copyFile(image.uri, imageDestPath);
-      mediaFiles.push(imageDestPath);
-    }
-
-    // Sao chép video (nếu có) vào thư mục tạm
-    if (video) {
-      const videoDestPath = `${tempDir}/${video.fileName}`;
-      await RNFS.copyFile(video.uri, videoDestPath);
-      mediaFiles.push(videoDestPath);
-    }
-
-    // Nén tất cả các file vào một file zip
-    const zipFilePath = `${RNFS.DocumentDirectoryPath}/${uuid.v4()}.zip`;
-    await zip(tempDir, zipFilePath);
-
-    // Tạo formData để gửi file zip lên backend
     const formData = new FormData();
-    formData.append('file', {
-      uri: `file://${zipFilePath}`,  // Đảm bảo có `file://` để chỉ định URI
-      type: 'application/zip',
-      name: 'post.zip',
-    });
+    formData.append('content', content);
+    formData.append('access_status', accessStatus);
+    if (imageFile) {
+      formData.append('images_file', {
+        uri: imageFile.uri,
+        type: imageFile.type,
+        name: imageFile.name,
+      });
+    }
+    if (videoFile) {
+      formData.append('video_file', {
+        uri: videoFile.uri,
+        type: videoFile.type,
+        name: videoFile.name,
+      });
+    }
 
-    // Gửi dữ liệu bài viết lên backend
-    const response = await axios.post(`${API_BASE_URL}/posts`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
+    const response = await axios.post(
+      `http://14.225.254.35:8080/api/article/{user_id}/post-article`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, 
+          'Content-Type': 'multipart/form-data', 
+        },
+      }
+    );
 
-    // Xóa thư mục tạm sau khi nén xong
-    await RNFS.unlink(tempDir);
+    // Log dữ liệu phản hồi từ server
+    console.log('Server Response:', response.data);
+  } catch (error) {
+    console.error('Error adding article:', error);
+    throw error;
+  }
+};
+
+// Sửa bài viết
+export const updateArticle = async (articleId, content, accessStatus, imageFile, videoFile) => {
+  try {
+    const { userId, token } = await getUserCredentials(); // Lấy userId và token
+
+    const formData = new FormData();
+    formData.append('content', content);
+    formData.append('access_status', accessStatus);
+    if (imageFile) {
+      formData.append('images_file', {
+        uri: imageFile.uri,
+        type: imageFile.type,
+        name: imageFile.name,
+      });
+    }
+    if (videoFile) {
+      formData.append('video_file', {
+        uri: videoFile.uri,
+        type: videoFile.type,
+        name: videoFile.name,
+      });
+    }
+
+    const response = await axios.put(
+      `http://14.225.254.35:8080/api/article/${userId}/update-article/${articleId}`,
+      formData,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Truyền token trong header
+          'Content-Type': 'multipart/form-data', // Đảm bảo gửi đúng loại form data
+        },
+      }
+    );
 
     return response.data;
   } catch (error) {
-    console.error('Failed to submit post:', error);
+    console.error('Error updating article:', error);
+    throw error;
+  }
+};
+
+// Xóa bài viết
+export const deleteArticle = async (articleId) => {
+  try {
+    const { userId, token } = await getUserCredentials(); // Lấy userId và token
+
+    const response = await axios.delete(
+      `http://14.225.254.35:8080/api/article/${userId}/delete-article/${articleId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Truyền token trong header
+        },
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Error deleting article:', error);
     throw error;
   }
 };

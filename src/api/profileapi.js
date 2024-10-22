@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const BASE_URL = 'http://14.225.254.35:8080/api';
 
 // Hàm lấy userId và token từ AsyncStorage
-const getUserCredentials = async () => {
+export const getUserCredentials = async () => {
   try {
     const userId = await AsyncStorage.getItem('userId');
     const token = await AsyncStorage.getItem('userToken');
