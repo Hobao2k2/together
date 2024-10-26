@@ -31,53 +31,34 @@ export const addArticle = async (content, accessStatus, imageFiles, videoFile) =
   formData.append('content', content);
   formData.append('access_status', accessStatus);
 
-  const getFileFromURI = async (file) => {
-    if (file && file.uri && file.uri.startsWith('content://')) {
-      try {
-        const path = `${RNFS.TemporaryDirectoryPath}/${file.name || `file_${Date.now()}`}`;
-        await RNFS.copyFile(file.uri, path);
-        return { ...file, uri: `file://${path}` };
-      } catch (error) {
-        console.error("Failed to convert content URI to file path:", error);
-        return null;
-      }
-    }
-    return file;
-  };
-
   // Thêm ảnh vào `FormData`
   if (imageFiles && imageFiles.length > 0) {
-    for (const file of imageFiles) {
-      const convertedFile = await getFileFromURI(file);
-      if (convertedFile) {
-        formData.append('images_file', {
-          uri: convertedFile.uri,
-          name: convertedFile.name || `file_${Date.now()}.jpg`,
-          type: convertedFile.type || 'image/jpeg',
-        });
-      }
-    }
-  }
-
-  // Kiểm tra và thêm video vào `FormData` nếu có
-  if (videoFile && videoFile.uri) {
-    const validVideoFile = await getFileFromURI(videoFile);
-
-    if (validVideoFile && validVideoFile.uri) {
-      formData.append('video_file', {
-        uri: validVideoFile.uri,
-        type: validVideoFile.type || 'video/mp4',
-        name: validVideoFile.name || `video_${Date.now()}.mp4`,
+    imageFiles.forEach((file, index) => {
+      formData.append('images_file', {
+        uri: file.uri,
+        name: file.fileName || `image_${index}.jpg`,
+        type: file.type || 'image/jpeg',
       });
-      console.log('Preparing to upload video:', validVideoFile);
-    } else {
-      console.error('Failed to prepare video file for upload');
-    }
+    });
   }
+
+  // Thêm video vào `FormData` nếu có
+  if (videoFile && videoFile.uri) {
+    formData.append('video_file', {
+      uri: videoFile.uri,
+      type: videoFile.type || 'video/mp4',
+      name: videoFile.fileName || `video_${Date.now()}.mp4`,
+    });
+    console.log('Added video to FormData:', videoFile);
+  }
+
+  // Log toàn bộ `FormData` trước khi gửi
+  console.log("Logging all FormData parts before sending:");
+  formData._parts.forEach(part => {
+    console.log("Key:", part[0], "Value:", part[1]);
+  });
 
   try {
-    console.log('Final FormData before sending:', formData);
-
     const response = await axios.post(
       `http://14.225.254.35:8080/api/article/${userId}/post-article`,
       formData,
@@ -96,7 +77,6 @@ export const addArticle = async (content, accessStatus, imageFiles, videoFile) =
     if (error.response) {
       console.error('Error response data:', error.response.data);
       console.error('Error response status:', error.response.status);
-      console.error('Error response headers:', error.response.headers);
     } else if (error.request) {
       console.error('Error request:', error.request);
     } else {
