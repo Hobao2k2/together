@@ -6,6 +6,7 @@ import com.example.together.dto.response.AuthenticationResponse;
 import com.example.together.dto.response.IntrospectResponse;
 import com.example.together.exception.AppException;
 import com.example.together.exception.ErrorCode;
+import com.example.together.mapper.UserMapper;
 import com.example.together.repository.UserRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -26,6 +27,7 @@ import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +35,7 @@ import java.util.Date;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationService {
     UserRepository userRepository;
+    UserMapper userMapper;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -45,6 +48,8 @@ public class AuthenticationService {
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
+        var user = userRepository.findByEmail(signedJWT.getJWTClaimsSet().getSubject())
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_USER));
 
         Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
 
@@ -52,6 +57,7 @@ public class AuthenticationService {
 
         return IntrospectResponse.builder()
                 .valid(verified && expiryTime.after(new Date()))
+                .user(userMapper.toUserResponse(user))
                 .build();
     }
 
@@ -75,7 +81,6 @@ public class AuthenticationService {
 
     private String generateToken(String email) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
-
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(email)
                 .issuer("hobao2k2.com")
@@ -83,6 +88,7 @@ public class AuthenticationService {
                 .expirationTime(new Date(
                         Instant.now().plus(30, ChronoUnit.DAYS).toEpochMilli()
                 ))
+                .jwtID(UUID.randomUUID().toString())
                 .claim("userId", "Custom")
                 .build();
 

@@ -28,7 +28,7 @@ public class OTPService {
 
     public String sendOTP(String email) {
         var user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
-        String otp = generateUniqueOTP();
+        String otp = generateUniqueOTP(user);
         OTP otpEntity = OTP.builder().otp(otp).user(user).isUsed(false).createAt(LocalDateTime.now())
                 .expiryDate(LocalDateTime.now().plusMinutes(2)).build();
         otpRepository.save(otpEntity);
@@ -37,13 +37,12 @@ public class OTPService {
         return "da gui otp";
     }
 
-    public String verifyOTP(String otpRequest) {
-        var otpEntity = otpRepository.findByOtp(otpRequest)
-                .orElseThrow(() -> new AppException(ErrorCode.INVALID_OTP));
-        var user = otpEntity.getUser();
+    public String verifyOTP(String otpRequest, String email) {
+        var user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
         var otp = otpRepository.findFirstByUserAndIsUsedFalseOrderByExpiryDateDesc(user)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_OTP));
-        if (!otpRequest.equals(otp.getOtp())) {
+        if (!otp.getOtp().equals(otpRequest)) {
             throw new AppException(ErrorCode.INVALID_OTP);
         } else if (otp.getExpiryDate().isAfter(LocalDateTime.now())) {
             var userId = otp.getUser().getId();
@@ -55,6 +54,7 @@ public class OTPService {
         }
     }
 
+
     private void sendOTPEmail(OTPRequest request) {
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
         simpleMailMessage.setTo(request.getEmail());
@@ -63,11 +63,11 @@ public class OTPService {
         mailSender.send(simpleMailMessage);
     }
 
-    private String generateUniqueOTP() {
+    private String generateUniqueOTP(User user) {
         String otp;
         do {
             otp = String.format("%06d", new Random().nextInt(999999));
-        } while (otpRepository.existsByOtpAndIsUsedTrue(otp));
+        } while (otpRepository.existsByUserAndOtpAndIsUsedFalse(user, otp));
         return otp;
     }
 

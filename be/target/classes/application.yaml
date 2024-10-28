@@ -9,7 +9,8 @@ spring:
     password: baonam1208
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
+      dialect: org.hibernate.dialect.MySQL8Dialect
     show-sql: true
   mail:
     host: smtp.gmail.com

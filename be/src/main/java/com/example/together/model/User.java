@@ -33,4 +33,9 @@ public class User {
 
     @OneToMany(mappedBy = "user2",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<Relationship> friendshipsReceived = new HashSet<>();
+
+    @OneToMany(mappedBy = "createdBy",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    private List<Group> groupsCreated;
+
+
 }

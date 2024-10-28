@@ -13,6 +13,9 @@ import com.example.together.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,7 +39,7 @@ public class UserService {
 
         return userMapper.toUserResponse(userRepository.save(user));
     }
-
+    @PostAuthorize("returnObject.email == authentication.name")
     public UserResponse updateUser(String userId, UserUpdateRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_USER));
@@ -49,12 +52,11 @@ public class UserService {
     public void deleteUser(String userId){
         userRepository.deleteById(userId);
     }
-
     public List<UserResponse> getUsers(){
         return userRepository.findAll().stream()
                 .map(userMapper::toUserResponse).toList();
     }
-
+    @PostAuthorize("returnObject.email == authentication.name")
     public UserResponse getUser(String id){
         return userMapper.toUserResponse(userRepository.findById(id)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_USER)));

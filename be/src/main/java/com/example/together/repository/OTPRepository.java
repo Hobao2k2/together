@@ -11,8 +11,8 @@ import java.util.Optional;
 
 @Repository
 public interface OTPRepository extends JpaRepository<OTP, Long> {
-    Optional<OTP> findByOtp(String OTP);
     Optional<OTP> findFirstByUserAndIsUsedFalseOrderByExpiryDateDesc(User user);
 
-    boolean existsByOtpAndIsUsedTrue(String otp);
+    boolean existsByUserAndOtpAndIsUsedFalse(User user, String otp);
+
 }

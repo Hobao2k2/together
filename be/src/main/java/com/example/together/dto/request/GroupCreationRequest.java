@@ -1,5 +1,6 @@
-package com.example.together.dto.response;
+package com.example.together.dto.request;
 
+import com.example.together.model.User;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -8,7 +9,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class IntrospectResponse {
-    boolean valid;
-    UserResponse user;
+public class GroupCreationRequest {
+    String name;
+    User createdBy;
 }

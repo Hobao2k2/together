@@ -28,7 +28,7 @@ public class OTPController {
     @PostMapping("/verify")
     ApiResponse<String> verifyOTP(@RequestBody OTPRequest request) {
         return ApiResponse.<String>builder()
-                .result(otpService.verifyOTP(request.getOtp()))
+                .result(otpService.verifyOTP(request.getOtp(),request.getEmail()))
                 .build();
     }
 }
