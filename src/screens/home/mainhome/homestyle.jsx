@@ -1,53 +1,72 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
-const { width } = Dimensions.get('window');
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f0f2f5',
   },
-  contentContainer: {
-    flex: 1,
-    justifyContent: 'center',
+  postContainer: {
+    marginVertical: 8,
+    marginHorizontal: 16,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  postHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
+    padding: 10,
+  },
+  avatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  username: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  postContent: {
+    padding: 10,
   },
   contentText: {
-    fontSize: 24,
+    fontSize: 15,
+    marginBottom: 10,
     color: '#333',
   },
-  tabBarContainer: {
+  postImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  videoText: {
+    color: 'blue',
+    textDecorationLine: 'underline',
+    marginVertical: 10,
+  },
+  postFooter: {
     flexDirection: 'row',
-    height: 56,
-    width: width,
-    backgroundColor: '#fff',
-    borderTopWidth: 2,
-    borderTopColor: '#ddd',
     justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  iconContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    marginRight: 10,
   },
-  tabButton: {
-    alignItems: 'center',
-  },
-  tabText: {
-    fontSize: 10,
-    color: '#777',
-    marginTop: 4,
-  },
-  fabContainer: {
-    position: 'absolute',
-    bottom: 28,
-    alignSelf: 'center',
-  },
-  fabButton: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: '#007aff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 5,
+  footerText: {
+    marginLeft: 5,
+    color: '#666',
+    fontSize: 14,
   },
 });
 
