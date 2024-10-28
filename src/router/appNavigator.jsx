@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import HomeScreen from '../screens/home/mainhome/homescreen';
 import AddPostScreen from '../screens/home/addpost/addpostscreen';
 import ProfileScreen from '../screens/profile/profilescreen';  
+import PostDetailScreen from '../screens/home/postdetail/postdetailscreen';  
 import LoginScreen from '../screens/auth/login/loginscreen';
 import RegisterScreen from '../screens/auth/register/registerscreen';
 import ForgotPasswordScreen from '../screens/auth/forgotpassword/forgotpasswordscreen';
@@ -14,23 +15,22 @@ import ResetPasswordScreen from '../screens/auth/forgotpassword/resetpasswordscr
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Stack Navigator for Authentication screens
-function AuthStackNavigator({ setIsLoggedIn, setUserId }) {
+// Stack Navigator for Profile and Post Detail
+function ProfileStackNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Login">
-        {(props) => (
-          <LoginScreen
-            {...props}
-            setIsLoggedIn={setIsLoggedIn} 
-            setUserId={setUserId} 
-          />
-        )}
-      </Stack.Screen>
-      <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-      <Stack.Screen name="OtpScreen" component={OtpScreen} />
-      <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen} />
+      <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// Stack Navigator for Home and Post Detail
+function HomeStackNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
     </Stack.Navigator>
   );
 }
@@ -57,10 +57,31 @@ function MainTabNavigator() {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="AddPost" component={AddPostScreen} /> 
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Home" component={HomeStackNavigator} />
+      <Tab.Screen name="AddPost" component={AddPostScreen} />
+      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>
+  );
+}
+
+// Stack Navigator for Authentication screens
+function AuthStackNavigator({ setIsLoggedIn, setUserId }) {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login">
+        {props => (
+          <LoginScreen
+            {...props}
+            setIsLoggedIn={setIsLoggedIn}
+            setUserId={setUserId}
+          />
+        )}
+      </Stack.Screen>
+      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+      <Stack.Screen name="OtpScreen" component={OtpScreen} />
+      <Stack.Screen name="ResetPasswordScreen" component={ResetPasswordScreen} />
+    </Stack.Navigator>
   );
 }
 
@@ -76,8 +97,8 @@ function AppNavigator() {
       ) : (
         // Authentication screens when not logged in
         <AuthStackNavigator
-          setIsLoggedIn={setIsLoggedIn} // Update authentication state
-          setUserId={setUserId} // Store userId after successful login
+          setIsLoggedIn={setIsLoggedIn} // Pass setIsLoggedIn to AuthStackNavigator
+          setUserId={setUserId} // Pass setUserId to AuthStackNavigator
         />
       )}
     </>
