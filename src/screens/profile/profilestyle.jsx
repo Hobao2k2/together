@@ -1,10 +1,11 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
+const postSize = width / 1 - 10;
 
 const styles = StyleSheet.create({
   container: {
-    flexGrow: 1,
+    flex: 1, 
     alignItems: 'center',
     backgroundColor: '#f8f9fa',
   },
@@ -14,6 +15,7 @@ const styles = StyleSheet.create({
     marginTop: width * 0.08,
     borderBottomLeftRadius: 20,
     borderBottomRightRadius: 20,
+    alignSelf: 'center', 
   },
   wallpaperOverlay: {
     width: '100%',
@@ -97,6 +99,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    alignSelf: 'center',
   },
   username: {
     fontSize: 28,
@@ -159,23 +162,78 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   modalButton: {
-    backgroundColor: '#4CAF50', 
+    backgroundColor: '#4CAF50',
     padding: 10,
     margin: 10,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row', 
-    width: '60%', 
+    flexDirection: 'row',
+    width: '60%',
   },
   cancelButton: {
-    backgroundColor: 'red', 
+    backgroundColor: 'red',
   },
   buttonText: {
-    color: 'white', 
+    color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
-    textAlign: 'center', 
+    textAlign: 'center',
+  },
+  postItemContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    marginBottom: 10,
+    padding: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    width: width * 0.9, 
+    alignSelf: 'center',
+  },
+  postHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  avatarSmall: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  usernamePost: {
+    fontWeight: 'bold',
+  },
+  postContent: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  imageScrollView: {
+    marginBottom: 10, 
+  },
+  postImage: {
+    width: 200, 
+    height: 200,
+    marginRight: 10, 
+    borderRadius: 10,
+  },
+  postVideo: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  noMediaText: {
+    textAlign: 'center',
+    color: '#999',
+    marginBottom: 10,
+  },
+  postInteractionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
   },
 });
 

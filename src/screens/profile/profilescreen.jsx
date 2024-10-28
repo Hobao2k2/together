@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, TextInput, Alert, ScrollView, ActivityIndicator, Modal } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ActivityIndicator, Modal, FlatList, Alert, TextInput } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import LinearGradient from 'react-native-linear-gradient';
 import { getUserInfoApi, updateProfileApi, uploadImageApi } from '../../api/profileapi';
+import { getUserPostsApi } from '../../api/postapi';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Video from 'react-native-video';
 import styles from './profilestyle';
 
 const ProfileScreen = ({ route, userId, navigation }) => {
   const userIdFromRoute = route?.params?.userId || userId;
+
+  const [posts, setPosts] = useState([]); // State để lưu danh sách bài viết
+  const [postsLoading, setPostsLoading] = useState(true);
+  const [page, setPage] = useState(0);  // Số trang để phân trang
+  const [pageSize] = useState(10);  // Số bài viết mỗi trang
 
   const [profile, setProfile] = useState({
     username: '',
@@ -53,7 +60,6 @@ const ProfileScreen = ({ route, userId, navigation }) => {
   }, [userIdFromRoute]);
 
   const [photo, setPhoto] = useState(null);
-  const [type, setType] = useState('avatar');
 
   // Hàm để upload ảnh
   const handleUploadImage = async (imageType) => {
@@ -102,6 +108,90 @@ const ProfileScreen = ({ route, userId, navigation }) => {
     }
   };
 
+  // Hàm lấy danh sách bài viết từ API
+  const fetchUserPosts = async () => {
+    try {
+      const response = await getUserPostsApi(page, pageSize);
+      const postsData = response.result; // Truy cập vào result trong API
+
+      if (Array.isArray(postsData)) {
+        setPosts((prevPosts) => [...prevPosts, ...postsData]); // Thêm vào danh sách hiện tại
+      }
+    } catch (error) {
+      console.error('Lỗi khi lấy bài viết:', error);
+    } finally {
+      setPostsLoading(false);
+    }
+  };
+
+  // Gọi API lấy bài viết khi component mount hoặc khi số trang thay đổi
+  useEffect(() => {
+    fetchUserPosts();
+  }, [page]);
+
+  const handlePostPress = (post) => {
+    navigation.navigate('PostDetail', { postDetail: post }); // Truyền toàn bộ bài viết qua tham số
+  };
+
+  // Hàm render từng bài viết
+  const renderPostItem = ({ item }) => {
+    const hasImages = item.image_article.length > 0;  // Kiểm tra có hình ảnh không
+    const hasVideo = item.video_article !== null;     // Kiểm tra có video không
+
+    return (
+      <TouchableOpacity onPress={() => handlePostPress(item)}>
+        <View style={styles.postItemContainer}>
+          {/* Thông tin người đăng */}
+          <View style={styles.postHeader}>
+            <Image source={{ uri: item.user_avatar }} style={styles.avatarSmall} />
+            <Text style={styles.usernamePost}>{item.username}</Text>
+          </View>
+
+          {/* Nội dung bài viết */}
+          <Text style={styles.postContent}>{item.content}</Text>
+
+          {/* Nếu có video, hiển thị video */}
+          {hasVideo && (
+            <Video
+              source={{ uri: item.video_article }}
+              style={styles.postVideo}
+              resizeMode="cover"
+              repeat={true}
+            />
+          )}
+
+          {/* Nếu có nhiều hình ảnh, hiển thị thanh cuộn ngang */}
+          {hasImages && (
+            <FlatList
+              horizontal
+              data={item.image_article}
+              renderItem={({ item }) => <Image source={{ uri: item }} style={styles.postImage} />}
+              keyExtractor={(image, index) => `${item.id}-image-${index}`}
+            />
+          )}
+
+          {/* Nếu không có hình ảnh và video */}
+          {!hasImages && !hasVideo && (
+            <Text style={styles.noMediaText}>Không có hình ảnh hoặc video</Text>
+          )}
+
+          {/* Thêm các nút tương tác */}
+          <View style={styles.postInteractionContainer}>
+            <TouchableOpacity>
+              <Icon name="favorite-border" size={20} color="#000" />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Icon name="chat-bubble-outline" size={20} color="#000" />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Icon name="share" size={20} color="#000" />
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -111,52 +201,62 @@ const ProfileScreen = ({ route, userId, navigation }) => {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <LinearGradient colors={['#6a11cb', '#2575fc']} style={styles.wallpaperContainer}>
-        <TouchableOpacity onPress={() => handleUploadImage('wallpaper')} style={styles.wallpaperOverlay}>
-          <Image
-            source={profile.wallpaper_path ? { uri: profile.wallpaper_path } : require('../../../assets/image/wallpaper.png')}
-            style={styles.wallpaper}
-          />
-          <Icon name="camera-alt" size={30} color="#fff" style={styles.wallpaperIcon} />
-        </TouchableOpacity>
-        <View style={styles.headerContainer}>
-          <TouchableOpacity>
-            <Icon name="arrow-back" size={28} color="#fff" style={styles.backIcon} />
-          </TouchableOpacity>
-          <Text style={styles.headerText}>My Profile</Text>
-          <TouchableOpacity>
-            <Icon name="more-vert" size={28} color="#fff" style={styles.menuIcon} />
-          </TouchableOpacity>
-        </View>
-        <View style={styles.avatarWrapper}>
-          <TouchableOpacity onPress={() => handleUploadImage('avatar')} style={styles.avatarContainer}>
-            <Image
-              source={profile.avatar_path ? { uri: profile.avatar_path } : require('../../../assets/image/avatar_icon.png')}
-              style={styles.avatar}
-            />
-            <Icon name="camera-alt" size={25} color="#fff" style={styles.avatarIcon} />
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
-      <View style={styles.profileContainer}>
-        <Text style={styles.username}>{profile.username}</Text>
-        <Text style={styles.bio}>{profile.bios}</Text>
-        <TouchableOpacity
-          style={styles.updateProfileButton}
-          onPress={() => setModalVisible(true)}
-        >
-          <Text style={styles.updateProfileButtonText}>Cập nhật thông tin</Text>
-        </TouchableOpacity>
-      </View>
+    <>
+      <FlatList
+        data={posts}
+        renderItem={renderPostItem}
+        keyExtractor={(item) => item.id.toString()}
+        numColumns={1}
+        columnWrapperStyle={styles.columnWrapper}
+        onEndReached={() => setPage(page + 1)}
+        onEndReachedThreshold={0.5}
+        ListHeaderComponent={
+          <>
+            <LinearGradient colors={['#6a11cb', '#2575fc']} style={styles.wallpaperContainer}>
+              <TouchableOpacity onPress={() => handleUploadImage('wallpaper')} style={styles.wallpaperOverlay}>
+                <Image
+                  source={profile.wallpaper_path ? { uri: profile.wallpaper_path } : require('../../../assets/image/wallpaper.png')}
+                  style={styles.wallpaper}
+                />
+                <Icon name="camera-alt" size={30} color="#fff" style={styles.wallpaperIcon} />
+              </TouchableOpacity>
+              <View style={styles.headerContainer}>
+                <TouchableOpacity>
+                  <Icon name="arrow-back" size={28} color="#fff" style={styles.backIcon} />
+                </TouchableOpacity>
+                <Text style={styles.headerText}>My Profile</Text>
+                <TouchableOpacity>
+                  <Icon name="more-vert" size={28} color="#fff" style={styles.menuIcon} />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.avatarWrapper}>
+                <TouchableOpacity onPress={() => handleUploadImage('avatar')} style={styles.avatarContainer}>
+                  <Image
+                    source={profile.avatar_path ? { uri: profile.avatar_path } : require('../../../assets/image/avatar_icon.png')}
+                    style={styles.avatar}
+                  />
+                  <Icon name="camera-alt" size={25} color="#fff" style={styles.avatarIcon} />
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+            <View style={styles.profileContainer}>
+              <Text style={styles.username}>{profile.username}</Text>
+              <Text style={styles.bio}>{profile.bios}</Text>
+              <TouchableOpacity style={styles.updateProfileButton} onPress={() => setModalVisible(true)}>
+                <Text style={styles.updateProfileButtonText}>Cập nhật thông tin</Text>
+              </TouchableOpacity>
+            </View>
+          </>
+        }
+        ListFooterComponent={postsLoading ? <ActivityIndicator size="large" color="#000" /> : null}
+      />
 
+      {/* Modal cập nhật thông tin cá nhân */}
       <Modal
         animationType="slide"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(!modalVisible);
-        }}
+        onRequestClose={() => setModalVisible(false)}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalView}>
@@ -198,11 +298,10 @@ const ProfileScreen = ({ route, userId, navigation }) => {
             <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setModalVisible(false)}>
               <Text style={styles.buttonText}>Hủy</Text>
             </TouchableOpacity>
-
           </View>
         </View>
       </Modal>
-    </ScrollView>
+    </>
   );
 };
 
