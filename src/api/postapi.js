@@ -1,6 +1,7 @@
 import axios from 'axios';
-import RNFS from 'react-native-fs';
 import { getUserCredentials } from './profileapi'; 
+
+const BASE_URL = '${BASE_URL}';
 
 // Lấy danh sách bài viết của người dùng
 export const getArticles = async (page, articlesPerPage) => {
@@ -8,7 +9,7 @@ export const getArticles = async (page, articlesPerPage) => {
     const { userId, token } = await getUserCredentials(); 
 
     const response = await axios.get(
-      `http://14.225.254.35:8080/api/article/${userId}/get-articles/${page}/${articlesPerPage}`,
+      `${BASE_URL}/article/${userId}/get-articles/${page}/${articlesPerPage}`,
       {
         headers: {
           Authorization: `Bearer ${token}`, 
@@ -60,7 +61,7 @@ export const addArticle = async (content, accessStatus, imageFiles, videoFile) =
 
   try {
     const response = await axios.post(
-      `http://14.225.254.35:8080/api/article/${userId}/post-article`,
+      `${BASE_URL}/article/${userId}/post-article`,
       formData,
       {
         headers: {
@@ -112,7 +113,7 @@ export const updateArticle = async (articleId, content, accessStatus, imageFile,
     }
 
     const response = await axios.put(
-      `http://14.225.254.35:8080/api/article/${userId}/update-article/${articleId}`,
+      `${BASE_URL}/article/${userId}/update-article/${articleId}`,
       formData,
       {
         headers: {
@@ -135,7 +136,7 @@ export const deleteArticle = async (articleId) => {
     const { userId, token } = await getUserCredentials(); // Lấy userId và token
 
     const response = await axios.delete(
-      `http://14.225.254.35:8080/api/article/${userId}/delete-article/${articleId}`,
+      `${BASE_URL}/article/${userId}/delete-article/${articleId}`,
       {
         headers: {
           Authorization: `Bearer ${token}`, // Truyền token trong header
@@ -155,7 +156,7 @@ export const getUserPostsApi = async (page = 0, pageSize = 10) => {
   try {
     const { userId } = await getUserCredentials();
     // Gọi API lấy danh sách bài viết
-    const response = await axios.get(`http://14.225.254.35:8080/api/article/${userId}/get-articles/${page}/${pageSize}`);
+    const response = await axios.get(`${BASE_URL}/article/${userId}/get-articles/${page}/${pageSize}`);
     
     // Trả về dữ liệu từ API (giả sử response.data là mảng bài viết)
     return response.data;
@@ -165,23 +166,40 @@ export const getUserPostsApi = async (page = 0, pageSize = 10) => {
   }
 };
 
-// Hàm lấy chi tiết bài viết
-export const getArticleDetailApi = async (articleId, ownerId) => {
+// Hàm lấy danh sách bài viết màn hình home
+export const fetchPosts = async (userId, page, pageSize) => {
   try {
-    // Gọi API bằng axios với phương thức POST và dữ liệu trong body
-    const response = await axios.get('http://14.225.254.35:8080/api/article/detail-article', {
-      article_id: articleId,
-      owner_id: ownerId,
-    });
-
-    // Kiểm tra mã phản hồi từ API
+    const { userId } = await getUserCredentials();
+    const response = await axios.get(`${BASE_URL}/article/${userId}/get-news/${page}/${pageSize}`);
     if (response.data.code === 1000) {
-      return response.data.result;  // Trả về dữ liệu bài viết chi tiết
-    } else {
-      throw new Error('API trả về mã lỗi không mong muốn.');
+      return {
+        success: true,
+        data: response.data.result,
+      };
     }
+    return { success: false, error: 'Error fetching posts' };
   } catch (error) {
-    console.error('Lỗi khi lấy chi tiết bài viết:', error.response ? error.response.data : error.message);
-    throw error;
+    console.error("Error fetching posts:", error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Hàm lấy chi tiết bài viết
+export const fetchPostDetail = async (article_id, owner_id) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/article/detail-article`, {
+      article_id,
+      owner_id,
+    });
+    if (response.data.code === 1000) {
+      return {
+        success: true,
+        data: response.data.result,
+      };
+    }
+    return { success: false, error: 'Error fetching post details' };
+  } catch (error) {
+    console.error("Error fetching post details:", error);
+    return { success: false, error: error.message };
   }
 };
