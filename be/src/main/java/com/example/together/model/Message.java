@@ -3,6 +3,8 @@ package com.example.together.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -23,9 +25,10 @@ public class Message {
 
     @ManyToOne
     @JoinColumn(name = "groupId")
-    private Group group;
+    private GroupChat group;
 
     private String content;
+    private LocalDateTime sentAt;
 
 
 }

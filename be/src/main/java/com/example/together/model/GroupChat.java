@@ -3,23 +3,25 @@ package com.example.together.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
+
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserGroup {
+public class GroupChat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "userId")
-    private User user;
+    private String name;
+
+    private LocalDateTime createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "groupId")
-    private Group group;
-
+    @JoinColumn(name = "createdBy")
+    private User createdBy;
 
 }

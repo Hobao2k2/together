@@ -5,22 +5,24 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-
 @Entity
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Group {
+public class UserGroupChat {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-
-    private LocalDateTime createdAt;
+    @ManyToOne
+    @JoinColumn(name = "userId")
+    private User user;
 
     @ManyToOne
-    @JoinColumn(name = "createdBy")
-    private User createdBy;  // Người tạo nhóm
+    @JoinColumn(name = "groupId")
+    private GroupChat group;
+
+    private LocalDateTime joinedAt;
+
 }
