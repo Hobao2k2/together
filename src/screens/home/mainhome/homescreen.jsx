@@ -59,7 +59,6 @@ const HomeScreen = ({ userId }) => {
           <Icon name="chatbubble-outline" size={20} color="#666" />
           <Text style={styles.footerText}>{item.number_comment}</Text>
         </View>
-        <Icon name="share-outline" size={20} color="#666" />
       </View>
     </TouchableOpacity>
   );

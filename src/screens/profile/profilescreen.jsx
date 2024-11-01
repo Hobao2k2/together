@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, Image, TouchableOpacity, ActivityIndicator, Modal, FlatList, Alert, TextInput } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import LinearGradient from 'react-native-linear-gradient';
 import { getUserInfoApi, updateProfileApi, uploadImageApi } from '../../api/profileapi';
-import { getUserPostsApi } from '../../api/postapi';
+import { fetchPostDetail, getUserPostsApi, deleteArticleApi } from '../../api/postapi';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Video from 'react-native-video';
 import styles from './profilestyle';
@@ -13,8 +14,15 @@ const ProfileScreen = ({ route, userId, navigation }) => {
 
   const [posts, setPosts] = useState([]); // State để lưu danh sách bài viết
   const [postsLoading, setPostsLoading] = useState(true);
-  const [page, setPage] = useState(0);  // Số trang để phân trang
-  const [pageSize] = useState(10);  // Số bài viết mỗi trang
+  const [page, setPage] = useState(0);  
+  const [pageSize] = useState(10);  
+  const [photo, setPhoto] = useState(null);
+  const [editableProfile, setEditableProfile] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
+  const [selectedArticleId, setSelectedArticleId] = useState(null);
+  const [playingVideoId, setPlayingVideoId] = useState(null);
 
   const [profile, setProfile] = useState({
     username: '',
@@ -22,10 +30,6 @@ const ProfileScreen = ({ route, userId, navigation }) => {
     avatar_path: '',
     wallpaper_path: '',
   });
-
-  const [editableProfile, setEditableProfile] = useState({});
-  const [loading, setLoading] = useState(true);
-  const [modalVisible, setModalVisible] = useState(false);
 
   // Hàm để tải lại thông tin từ API
   const fetchProfile = async () => {
@@ -54,12 +58,6 @@ const ProfileScreen = ({ route, userId, navigation }) => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchProfile();  // Gọi hàm fetchProfile khi component mount
-  }, [userIdFromRoute]);
-
-  const [photo, setPhoto] = useState(null);
 
   // Hàm để upload ảnh
   const handleUploadImage = async (imageType) => {
@@ -124,13 +122,43 @@ const ProfileScreen = ({ route, userId, navigation }) => {
     }
   };
 
-  // Gọi API lấy bài viết khi component mount hoặc khi số trang thay đổi
-  useEffect(() => {
-    fetchUserPosts();
-  }, [page]);
+    // Làm mới dữ liệu khi màn hình Profile được focus
+    useFocusEffect(
+      useCallback(() => {
+        fetchProfile();
+        fetchUserPosts();
+      }, [userIdFromRoute, page])
+    );
 
-  const handlePostPress = (post) => {
-    navigation.navigate('PostDetail', { postDetail: post }); // Truyền toàn bộ bài viết qua tham số
+  const handlePostPress = async (articleId, ownerId) => {
+    try {
+      const articleDetail = await fetchPostDetail(articleId, ownerId);
+      if (articleDetail.success) {
+        navigation.navigate('PostDetail', { postDetail: articleDetail.data });
+      } else {
+        Alert.alert('Lỗi', articleDetail.error);
+      }
+    } catch (error) {
+      console.error('Lỗi khi lấy chi tiết bài viết:', error);
+      Alert.alert('Lỗi', 'Không thể lấy chi tiết bài viết');
+    }
+  };
+
+  // Hàm xóa bài viết
+  const handleDeletePost = async () => {
+    try {
+      await deleteArticleApi(selectedArticleId);
+      Alert.alert("Thành công", "Bài viết đã được xóa!");
+      setPosts(posts.filter(post => post.id !== selectedArticleId));
+      setConfirmDeleteVisible(false);
+    } catch (error) {
+      console.error("Lỗi khi xóa bài viết:", error);
+      Alert.alert("Lỗi", "Không thể xóa bài viết");
+    }
+  };
+  // Hàm kích hoạt khi một video bắt đầu tải
+  const handlePlay = (videoId) => {
+    setPlayingVideoId(videoId);  // Cập nhật trạng thái video đang phát
   };
 
   // Hàm render từng bài viết
@@ -139,12 +167,38 @@ const ProfileScreen = ({ route, userId, navigation }) => {
     const hasVideo = item.video_article !== null;     // Kiểm tra có video không
 
     return (
-      <TouchableOpacity onPress={() => handlePostPress(item)}>
+      <TouchableOpacity onPress={() => handlePostPress(item.id, item.user_id)}>
         <View style={styles.postItemContainer}>
           {/* Thông tin người đăng */}
           <View style={styles.postHeader}>
             <Image source={{ uri: item.user_avatar }} style={styles.avatarSmall} />
             <Text style={styles.usernamePost}>{item.username}</Text>
+
+            {/* Nút xóa */}
+            <TouchableOpacity
+              onPress={() => {
+                setSelectedArticleId(item.id);
+                setConfirmDeleteVisible(true);
+              }}
+              style={styles.menuButton}
+            >
+              <Icon name="delete" size={24} color="#e74c3c" />
+            </TouchableOpacity>
+
+            {/* Nút sửa */}
+            <TouchableOpacity
+              onPress={() => navigation.navigate('EditPostScreen', {
+                articleId: item.id,
+                userId: item.user_id,
+                content: item.content,
+                accessStatus: item.access_status,
+                images: item.image_article,
+                video: item.video_article,
+              })}
+              style={styles.menuButton}
+            >
+              <Icon name="edit" size={24} color="#4a90e2" />
+            </TouchableOpacity>
           </View>
 
           {/* Nội dung bài viết */}
@@ -152,12 +206,13 @@ const ProfileScreen = ({ route, userId, navigation }) => {
 
           {/* Nếu có video, hiển thị video */}
           {hasVideo && (
-            <Video
-              source={{ uri: item.video_article }}
-              style={styles.postVideo}
-              resizeMode="cover"
-              repeat={true}
-            />
+          <Video
+            source={{ uri: item.video_article }}
+            paused={playingVideoId !== item.id}  // Dừng video nếu không phải video hiện tại
+            onLoadStart={() => handlePlay(item.id)}  // Bắt đầu phát video
+            style={styles.postVideo}
+            resizeMode="cover"
+          />
           )}
 
           {/* Nếu có nhiều hình ảnh, hiển thị thanh cuộn ngang */}
@@ -182,9 +237,6 @@ const ProfileScreen = ({ route, userId, navigation }) => {
             </TouchableOpacity>
             <TouchableOpacity>
               <Icon name="chat-bubble-outline" size={20} color="#000" />
-            </TouchableOpacity>
-            <TouchableOpacity>
-              <Icon name="share" size={20} color="#000" />
             </TouchableOpacity>
           </View>
         </View>
@@ -298,6 +350,33 @@ const ProfileScreen = ({ route, userId, navigation }) => {
             <TouchableOpacity style={[styles.modalButton, styles.cancelButton]} onPress={() => setModalVisible(false)}>
               <Text style={styles.buttonText}>Hủy</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+            {/* Modal xác nhận xóa bài viết */}
+            <Modal
+        animationType="fade"
+        transparent={true}
+        visible={confirmDeleteVisible}
+        onRequestClose={() => setConfirmDeleteVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.confirmDeleteContainer}>
+            <Text style={styles.confirmDeleteText}>Bạn có chắc chắn muốn xóa bài viết này không?</Text>
+            <View style={styles.confirmDeleteButtons}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setConfirmDeleteVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Hủy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.confirmDeleteButton}
+                onPress={handleDeletePost}
+              >
+                <Text style={styles.confirmDeleteButtonText}>Xóa</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

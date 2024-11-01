@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getUserCredentials } from './profileapi'; 
 
-const BASE_URL = '${BASE_URL}';
+const BASE_URL = 'http://14.225.254.35:8080/api';
 
 // Lấy danh sách bài viết của người dùng
 export const getArticles = async (page, articlesPerPage) => {
@@ -35,7 +35,7 @@ export const addArticle = async (content, accessStatus, imageFiles, videoFile) =
   // Thêm ảnh vào `FormData`
   if (imageFiles && imageFiles.length > 0) {
     imageFiles.forEach((file, index) => {
-      formData.append('images_file', {
+      formData.append('image_files', {
         uri: file.uri,
         name: file.fileName || `image_${index}.jpg`,
         type: file.type || 'image/jpeg',
@@ -90,53 +90,58 @@ export const addArticle = async (content, accessStatus, imageFiles, videoFile) =
 };
 
 // Sửa bài viết
-export const updateArticle = async (articleId, content, accessStatus, imageFile, videoFile) => {
+export const editArticleApi = async (userId, articleId, content, accessStatus, imageFiles = [], videoFile = null) => {
+  const { token } = await getUserCredentials();
+
+  const formData = new FormData();
+  formData.append('content', content);
+  formData.append('access_status', accessStatus);
+
+  // Thêm ảnh vào `FormData` nếu có
+  if (imageFiles && imageFiles.length > 0) {
+    imageFiles.forEach((file, index) => {
+      formData.append('image_files', {
+        uri: file.uri,
+        name: file.fileName || `image_${index}.jpg`,
+        type: file.type || 'image/jpeg',
+      });
+    });
+  }
+
+  // Thêm video vào `FormData` nếu có
+  if (videoFile && videoFile.uri) {
+    formData.append('video_file', {
+      uri: videoFile.uri,
+      type: videoFile.type || 'video/mp4',
+      name: videoFile.fileName || `video_${Date.now()}.mp4`,
+    });
+  }
+
   try {
-    const { userId, token } = await getUserCredentials(); // Lấy userId và token
-
-    const formData = new FormData();
-    formData.append('content', content);
-    formData.append('access_status', accessStatus);
-    if (imageFile) {
-      formData.append('images_file', {
-        uri: imageFile.uri,
-        type: imageFile.type,
-        name: imageFile.name,
-      });
-    }
-    if (videoFile) {
-      formData.append('video_file', {
-        uri: videoFile.uri,
-        type: videoFile.type,
-        name: videoFile.name,
-      });
-    }
-
-    const response = await axios.put(
-      `${BASE_URL}/article/${userId}/update-article/${articleId}`,
+    const response = await axios.post(
+      `${BASE_URL}/article/${userId}/edit-article/${articleId}`,
       formData,
       {
         headers: {
-          Authorization: `Bearer ${token}`, // Truyền token trong header
-          'Content-Type': 'multipart/form-data', // Đảm bảo gửi đúng loại form data
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
         },
       }
     );
-
     return response.data;
   } catch (error) {
-    console.error('Error updating article:', error);
+    console.error('Lỗi khi sửa bài viết:', error);
     throw error;
   }
 };
 
 // Xóa bài viết
-export const deleteArticle = async (articleId) => {
+export const deleteArticleApi = async (articleId) => {
   try {
     const { userId, token } = await getUserCredentials(); // Lấy userId và token
 
     const response = await axios.delete(
-      `${BASE_URL}/article/${userId}/delete-article/${articleId}`,
+      `${BASE_URL}/article/delete-article`,
       {
         headers: {
           Authorization: `Bearer ${token}`, // Truyền token trong header
@@ -190,7 +195,12 @@ export const fetchPostDetail = async (article_id, owner_id) => {
     const response = await axios.post(`${BASE_URL}/article/detail-article`, {
       article_id,
       owner_id,
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
+
     if (response.data.code === 1000) {
       return {
         success: true,
