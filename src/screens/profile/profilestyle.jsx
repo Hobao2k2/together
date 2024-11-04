@@ -220,38 +220,46 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   postContent: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#444',
-    marginBottom: 10,
+    marginLeft: 5,
+    marginVertical: 10,
   },
-  imageScrollView: {
-    marginBottom: 10,
+  mediaWrapper: {
+    marginVertical: 10,
+    width: '100%', 
   },
   postImage: {
-    width: 200,
-    height: 200,
-    marginRight: 10,
+    width: '90%', 
+    height: 300,
     borderRadius: 10,
-    backgroundColor: '#f2f5fa',
+    resizeMode: 'cover',
+    alignSelf: 'center', 
   },
   postVideo: {
-    width: '100%',
-    height: 200,
+    width: '90%', 
+    height: 300,
+    backgroundColor: '#000',
     borderRadius: 10,
-    marginBottom: 10,
-    backgroundColor: '#f2f5fa',
+    alignSelf: 'center', 
+  },
+  postInteractionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    marginTop: 10,
   },
   noMediaText: {
     textAlign: 'center',
     color: '#9c9c9c',
     fontSize: 14,
     marginBottom: 10,
-  },
-  postInteractionContainer: {
+  }, 
+  interactionButton: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 10,
-  },
+  }, 
   menuButton: {
     marginHorizontal: 5,
   },
@@ -284,13 +292,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     width: '100%',
   },
-  cancelButton: {
-    backgroundColor: '#e74c3c',
-    borderRadius: 5,
-    paddingVertical: 10,
-    width: '45%',
-    alignItems: 'center',
-  },
   confirmDeleteButton: {
     backgroundColor: '#4a90e2',
     borderRadius: 5,
@@ -306,7 +307,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-  },  
+  },
 });
 
 export default styles;

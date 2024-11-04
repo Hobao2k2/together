@@ -138,13 +138,12 @@ export const editArticleApi = async (userId, articleId, content, accessStatus, i
 // Xóa bài viết
 export const deleteArticleApi = async (articleId) => {
   try {
-    const { userId, token } = await getUserCredentials(); // Lấy userId và token
-
     const response = await axios.delete(
       `${BASE_URL}/article/delete-article`,
       {
+        data: { article_id: articleId },
         headers: {
-          Authorization: `Bearer ${token}`, // Truyền token trong header
+          "Content-Type": "application/json",
         },
       }
     );

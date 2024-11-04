@@ -6,13 +6,17 @@ import LinearGradient from 'react-native-linear-gradient';
 import { getUserInfoApi, updateProfileApi, uploadImageApi } from '../../api/profileapi';
 import { fetchPostDetail, getUserPostsApi, deleteArticleApi } from '../../api/postapi';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Carousel from 'react-native-reanimated-carousel';
 import Video from 'react-native-video';
 import styles from './profilestyle';
+import { Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 const ProfileScreen = ({ route, userId, navigation }) => {
   const userIdFromRoute = route?.params?.userId || userId;
 
-  const [posts, setPosts] = useState([]); // State để lưu danh sách bài viết
+  const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [page, setPage] = useState(0);  
   const [pageSize] = useState(10);  
@@ -31,7 +35,6 @@ const ProfileScreen = ({ route, userId, navigation }) => {
     wallpaper_path: '',
   });
 
-  // Hàm để tải lại thông tin từ API
   const fetchProfile = async () => {
     try {
       const response = await getUserInfoApi(userIdFromRoute);
@@ -59,7 +62,6 @@ const ProfileScreen = ({ route, userId, navigation }) => {
     }
   };
 
-  // Hàm để upload ảnh
   const handleUploadImage = async (imageType) => {
     const options = {
       mediaType: 'photo',
@@ -71,9 +73,9 @@ const ProfileScreen = ({ route, userId, navigation }) => {
         setPhoto(selectedImage);
 
         try {
-          await uploadImageApi(selectedImage, imageType);  // Truyền type vào
+          await uploadImageApi(selectedImage, imageType);
           Alert.alert('Thành công', 'Ảnh đã được upload thành công!');
-          fetchProfile();  // Làm mới thông tin sau khi upload ảnh
+          fetchProfile(); 
         } catch (error) {
           const errorMessage = error.response ? error.response.data : error.message;
           Alert.alert('Lỗi', `Upload ảnh thất bại! Lỗi: ${errorMessage}`);
@@ -85,7 +87,6 @@ const ProfileScreen = ({ route, userId, navigation }) => {
     });
   };
 
-  // Hàm để cập nhật thông tin cá nhân
   const handleUpdateProfile = async () => {
     try {
       const updatedProfileData = {
@@ -98,22 +99,21 @@ const ProfileScreen = ({ route, userId, navigation }) => {
 
       await updateProfileApi(updatedProfileData);
       Alert.alert('Thành công', 'Thông tin cá nhân đã được cập nhật');
-      fetchProfile();  // Làm mới thông tin sau khi cập nhật thành công
-      setModalVisible(false);  // Đóng modal sau khi cập nhật
+      fetchProfile();
+      setModalVisible(false);
     } catch (error) {
       console.error('Lỗi khi cập nhật thông tin cá nhân:', error);
       Alert.alert('Lỗi', 'Không thể cập nhật thông tin cá nhân');
     }
   };
 
-  // Hàm lấy danh sách bài viết từ API
   const fetchUserPosts = async () => {
     try {
       const response = await getUserPostsApi(page, pageSize);
-      const postsData = response.result; // Truy cập vào result trong API
+      const postsData = response.result;
 
       if (Array.isArray(postsData)) {
-        setPosts((prevPosts) => [...prevPosts, ...postsData]); // Thêm vào danh sách hiện tại
+        setPosts((prevPosts) => [...prevPosts, ...postsData]);
       }
     } catch (error) {
       console.error('Lỗi khi lấy bài viết:', error);
@@ -122,13 +122,12 @@ const ProfileScreen = ({ route, userId, navigation }) => {
     }
   };
 
-    // Làm mới dữ liệu khi màn hình Profile được focus
-    useFocusEffect(
-      useCallback(() => {
-        fetchProfile();
-        fetchUserPosts();
-      }, [userIdFromRoute, page])
-    );
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfile();
+      fetchUserPosts();
+    }, [userIdFromRoute, page])
+  );
 
   const handlePostPress = async (articleId, ownerId) => {
     try {
@@ -156,87 +155,73 @@ const ProfileScreen = ({ route, userId, navigation }) => {
       Alert.alert("Lỗi", "Không thể xóa bài viết");
     }
   };
-  // Hàm kích hoạt khi một video bắt đầu tải
-  const handlePlay = (videoId) => {
-    setPlayingVideoId(videoId);  // Cập nhật trạng thái video đang phát
-  };
 
-  // Hàm render từng bài viết
   const renderPostItem = ({ item }) => {
-    const hasImages = item.image_article.length > 0;  // Kiểm tra có hình ảnh không
-    const hasVideo = item.video_article !== null;     // Kiểm tra có video không
+    const mediaData = [
+      ...item.image_article.map((image, index) => ({
+        type: 'image',
+        url: image,
+        key: `image-${index}`,
+      })),
+      item.video_article ? { type: 'video', url: item.video_article, key: 'video' } : null,
+    ].filter(Boolean);
+
+    const renderMediaItem = ({ item }) => (
+      <View style={styles.mediaWrapper}>
+        {item.type === 'image' ? (
+          <Image source={{ uri: item.url }} style={styles.postImage} />
+        ) : (
+          <Video
+            source={{ uri: item.url }}
+            style={styles.postVideo}
+            paused={playingVideoId !== item.key}
+            onLoadStart={() => setPlayingVideoId(item.key)}
+            resizeMode="cover"
+            controls
+          />
+        )}
+      </View>
+    );
 
     return (
       <TouchableOpacity onPress={() => handlePostPress(item.id, item.user_id)}>
         <View style={styles.postItemContainer}>
-          {/* Thông tin người đăng */}
           <View style={styles.postHeader}>
             <Image source={{ uri: item.user_avatar }} style={styles.avatarSmall} />
             <Text style={styles.usernamePost}>{item.username}</Text>
-
-            {/* Nút xóa */}
-            <TouchableOpacity
-              onPress={() => {
-                setSelectedArticleId(item.id);
-                setConfirmDeleteVisible(true);
-              }}
-              style={styles.menuButton}
-            >
-              <Icon name="delete" size={24} color="#e74c3c" />
-            </TouchableOpacity>
-
-            {/* Nút sửa */}
-            <TouchableOpacity
-              onPress={() => navigation.navigate('EditPostScreen', {
-                articleId: item.id,
-                userId: item.user_id,
-                content: item.content,
-                accessStatus: item.access_status,
-                images: item.image_article,
-                video: item.video_article,
-              })}
-              style={styles.menuButton}
-            >
-              <Icon name="edit" size={24} color="#4a90e2" />
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', marginLeft: 'auto' }}>
+              <TouchableOpacity style={styles.menuButton}>
+                <Icon name="delete" size={24} color="#e74c3c" />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.menuButton}>
+                <Icon name="edit" size={24} color="#4a90e2" />
+              </TouchableOpacity>
+            </View>
           </View>
 
-          {/* Nội dung bài viết */}
           <Text style={styles.postContent}>{item.content}</Text>
 
-          {/* Nếu có video, hiển thị video */}
-          {hasVideo && (
-          <Video
-            source={{ uri: item.video_article }}
-            paused={playingVideoId !== item.id}  // Dừng video nếu không phải video hiện tại
-            onLoadStart={() => handlePlay(item.id)}  // Bắt đầu phát video
-            style={styles.postVideo}
-            resizeMode="cover"
-          />
-          )}
-
-          {/* Nếu có nhiều hình ảnh, hiển thị thanh cuộn ngang */}
-          {hasImages && (
-            <FlatList
-              horizontal
-              data={item.image_article}
-              renderItem={({ item }) => <Image source={{ uri: item }} style={styles.postImage} />}
-              keyExtractor={(image, index) => `${item.id}-image-${index}`}
+          {mediaData.length > 0 ? (
+            <Carousel
+              loop
+              width={width * 0.9}
+              height={300}
+              data={mediaData}
+              renderItem={renderMediaItem}
+              scrollAnimationDuration={1000}
             />
+          ) : (
+            <Text style={styles.noMediaText}>No media available</Text>
           )}
 
-          {/* Nếu không có hình ảnh và video */}
-          {!hasImages && !hasVideo && (
-            <Text style={styles.noMediaText}>Không có hình ảnh hoặc video</Text>
-          )}
-
-          {/* Thêm các nút tương tác */}
           <View style={styles.postInteractionContainer}>
-            <TouchableOpacity>
+            <TouchableOpacity style={styles.interactionButton}>
               <Icon name="favorite-border" size={20} color="#000" />
+              <Text style={styles.interactionText}>{item.likes} Likes</Text>
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity style={styles.interactionButton}>
               <Icon name="chat-bubble-outline" size={20} color="#000" />
+              <Text style={styles.interactionText}>{item.comments} Comments</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -258,8 +243,6 @@ const ProfileScreen = ({ route, userId, navigation }) => {
         data={posts}
         renderItem={renderPostItem}
         keyExtractor={(item) => item.id.toString()}
-        numColumns={1}
-        columnWrapperStyle={styles.columnWrapper}
         onEndReached={() => setPage(page + 1)}
         onEndReachedThreshold={0.5}
         ListHeaderComponent={
@@ -303,8 +286,7 @@ const ProfileScreen = ({ route, userId, navigation }) => {
         ListFooterComponent={postsLoading ? <ActivityIndicator size="large" color="#000" /> : null}
       />
 
-      {/* Modal cập nhật thông tin cá nhân */}
-      <Modal
+<Modal
         animationType="slide"
         transparent={true}
         visible={modalVisible}

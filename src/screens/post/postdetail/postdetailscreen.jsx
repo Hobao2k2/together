@@ -1,11 +1,16 @@
 import React from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, Text, Image, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native';
 import Video from 'react-native-video';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import Carousel from 'react-native-reanimated-carousel';
+import { useNavigation } from '@react-navigation/native';
 import styles from './postdetailstyle';
 
+const { width } = Dimensions.get('window');
+
 const PostDetailScreen = ({ route }) => {
-  const { postDetail } = route.params; // Nhận dữ liệu bài viết từ route
+  const navigation = useNavigation();
+  const { postDetail } = route.params;
 
   if (!postDetail) {
     return (
@@ -16,8 +21,38 @@ const PostDetailScreen = ({ route }) => {
     );
   }
 
+  // Chuẩn bị dữ liệu cho carousel với `key` duy nhất
+  const mediaData = [
+    ...postDetail.image_article.map((image, index) => ({
+      type: 'image',
+      url: image,
+      index: `${index + 1}`, // Sử dụng `index` duy nhất cho mỗi ảnh
+    })),
+    postDetail.video_article ? {
+      type: 'video',
+      url: postDetail.video_article,
+      index: `${postDetail.image_article.length + 1}`, // Sử dụng `index` duy nhất cho video
+    } : null,
+  ].filter(Boolean);
+
+  const renderMediaItem = ({ item }) => (
+    <View style={styles.mediaWrapper}>
+      <Text style={styles.indexLabel}>{item.index}/{mediaData.length}</Text>
+      {item.type === 'image' ? (
+        <Image source={{ uri: item.url }} style={styles.image} />
+      ) : (
+        <Video source={{ uri: item.url }} style={styles.video} controls resizeMode="cover" />
+      )}
+    </View>
+  );
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* Nút Back */}
+      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+        <Icon name="arrow-back" size={24} color="#000" />
+      </TouchableOpacity>
+
       {/* Thông tin người đăng */}
       <View style={styles.userInfoContainer}>
         <Image source={{ uri: postDetail.user_avatar }} style={styles.avatar} />
@@ -27,23 +62,18 @@ const PostDetailScreen = ({ route }) => {
       {/* Nội dung bài viết */}
       <Text style={styles.content}>{postDetail.content}</Text>
 
-      {/* Hiển thị video nếu có */}
-      {postDetail.video_article && (
-        <Video
-          source={{ uri: postDetail.video_article }}
-          style={styles.video}
-          resizeMode="cover"
-          repeat={true}
-        />
-      )}
-
-      {/* Hiển thị hình ảnh nếu có */}
-      {postDetail.image_article.length > 0 && (
-        <ScrollView horizontal style={styles.imageContainer}>
-          {postDetail.image_article.map((image, index) => (
-            <Image key={index} source={{ uri: image }} style={styles.image} />
-          ))}
-        </ScrollView>
+      {/* Carousel */}
+      {mediaData.length > 0 && (
+        <View style={{ flex: 1, alignItems: 'center', marginBottom: 20 }}>
+          <Carousel
+            loop
+            width={width}
+            height={300}
+            data={mediaData}
+            scrollAnimationDuration={1000}
+            renderItem={({ item }) => renderMediaItem({ item })}
+          />
+        </View>
       )}
 
       {/* Thông tin tương tác */}
@@ -60,16 +90,16 @@ const PostDetailScreen = ({ route }) => {
 
       {/* Bình luận */}
       <View style={styles.commentsContainer}>
-        <Text style={styles.commentsTitle}>Bình luận</Text>
-        {postDetail.comments.map((comment) => (
-          <View key={comment.comment_id} style={styles.comment}>
+        {postDetail.comments.map((comment, index) => (
+          <View key={`${comment.comment_id}-${index}`} style={styles.comment}>
             <Image source={{ uri: comment.avatar_path }} style={styles.commentAvatar} />
             <View style={styles.commentContent}>
               <Text style={styles.commentUsername}>{comment.username}</Text>
               <Text>{comment.content}</Text>
+              
               {/* Hiển thị phản hồi cho bình luận nếu có */}
-              {comment.child_comments && comment.child_comments.map((child) => (
-                <View key={child.comment_id} style={styles.childComment}>
+              {comment.child_comments && comment.child_comments.map((child, childIndex) => (
+                <View key={`${child.comment_id}-${childIndex}`} style={styles.childComment}>
                   <Image source={{ uri: child.avatar_path }} style={styles.commentAvatar} />
                   <View style={styles.commentContent}>
                     <Text style={styles.commentUsername}>{child.username}</Text>

@@ -41,20 +41,20 @@ function HomeStackNavigator() {
 const AddPostButton = forwardRef(({ color }, ref) => (
   <Icon
     name="add"
-    size={56}
+    size={50}
     color={color}
     style={{
       position: 'absolute',
-      bottom: 40,
+      bottom: 6,
       alignSelf: 'center',
       backgroundColor: '#ffffff',
       borderRadius: 36,
-      padding: 8,
-      elevation: 10,
+      padding: 6,
+      elevation: 6,
       shadowColor: '#000',
       shadowOffset: { width: 0, height: 5 },
-      shadowOpacity: 0.3,
-      shadowRadius: 6,
+      shadowOpacity: 0.4,
+      shadowRadius: 8,
     }}
     ref={ref}
   />
@@ -69,8 +69,10 @@ function MainTabNavigator() {
           let iconName;
           if (route.name === 'Home') {
             iconName = 'home';
-          } else if (route.name === 'AddPost') {
-            iconName = 'add';
+          } else if (route.name === 'Search') {
+            iconName = 'search';
+          } else if (route.name === 'Notifications') {
+            iconName = 'notifications';
           } else if (route.name === 'Profile') {
             iconName = 'person';
           }
@@ -80,10 +82,10 @@ function MainTabNavigator() {
         tabBarActiveTintColor: '#007aff',
         tabBarInactiveTintColor: '#777',
         tabBarStyle: {
-          height: 76,
+          height: 60,
           paddingTop: 10,
           paddingBottom: 8,
-          borderTopWidth: 2,
+          borderTopWidth: 3,
           borderTopColor: '#e0e0e0',
         },
         tabBarLabelStyle: {
@@ -92,7 +94,8 @@ function MainTabNavigator() {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="HomeScreen" component={HomeStackNavigator} />
+      <Tab.Screen name="Home" component={HomeStackNavigator} />
+      <Tab.Screen name="Search" component={HomeStackNavigator} />
       <Tab.Screen
         name="AddPost"
         component={AddPostScreen}
@@ -100,7 +103,8 @@ function MainTabNavigator() {
           tabBarIcon: ({ color }) => <AddPostButton color={color} />,
         }}
       />
-      <Tab.Screen name="ProfileScreen" component={ProfileStackNavigator} />
+      <Tab.Screen name="Notifications" component={ProfileStackNavigator} />
+      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>
   );
 }
