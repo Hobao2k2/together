@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, Alert, ScrollView } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import Video from 'react-native-video';
-import { editArticleApi } from '../../api/postapi';
+import { editArticleApi } from '../../../api/postapi';
 import styles from './editpoststyle';
 
 const EditPostScreen = ({ route, navigation }) => {
