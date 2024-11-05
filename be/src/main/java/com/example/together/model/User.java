@@ -33,11 +33,12 @@ public class User {
 
     @OneToMany(mappedBy = "user2",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
     private Set<Relationship> friendshipsReceived = new HashSet<>();
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Message> sentMessages = new ArrayList<>();
 
-    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Message> receivedMessages = new ArrayList<>();
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PrivateMessage> sentPrivateMessages = new ArrayList<>();
+
+    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<GroupMessage> sentGroupMessages = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Set<UserGroupChat> userGroupChats = new HashSet<>();

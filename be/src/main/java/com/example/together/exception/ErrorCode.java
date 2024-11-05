@@ -15,7 +15,7 @@ public enum ErrorCode {
     INVALID_USER(1010, "User invalid"),
     INVALID_REQUEST(1011, "Friend request has been sent before"),
     OTP_USED(1012,"has been used"),
-    ;
+    INVALID_GROUPCHAT(1013, "Invalid GroupChat");
 
     ErrorCode(int code, String message) {
         this.code = code;

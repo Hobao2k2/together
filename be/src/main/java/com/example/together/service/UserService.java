@@ -52,6 +52,7 @@ public class UserService {
     public void deleteUser(String userId){
         userRepository.deleteById(userId);
     }
+
     public List<UserResponse> getUsers(){
         return userRepository.findAll().stream()
                 .map(userMapper::toUserResponse).toList();
