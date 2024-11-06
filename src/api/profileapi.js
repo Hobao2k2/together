@@ -60,35 +60,6 @@ export const updateProfileApi = async (profileData) => {
   }
 };
 
-// export const uploadImageApi = async () => {
-//   try {
-//     const { userId, token } = await getUserCredentials(); // Lấy thông tin người dùng
-
-//     // Đọc dữ liệu từ tệp tin và chuyển đổi thành nhị phân
-//     // const imageData = await RNFS.readFile(imageUri, 'base64'); // Đọc file dưới dạng base64
-//     // Chuẩn bị FormData để upload
-//     const formData = new FormData();
-    
-//     formData.append('image', {
-//       uri: imageUri,  // Đường dẫn tới tệp trên thiết bị
-//       name: 'photo.jpg',  // Tên tệp
-//       type: 'image/jpeg'  // Loại file, có thể thay đổi nếu không phải là JPEG
-//     });
-
-//     const response = await axios.post(`${BASE_URL}/users/${userId}/upload-image`, formData, {
-//       headers: {
-//         Authorization: `Bearer ${token}`,
-//         'Content-Type': 'multipart/form-data',
-//       },
-//     });
-
-//     return response.data; 
-//   } catch (error) {
-//     const errorMessage = handleError(error); 
-//     throw new Error(errorMessage);
-//   }
-// };
-
 export const uploadImageApi = async (photo, type) => {
 
   const { userId, token } = await getUserCredentials(); // Lấy thông tin người dùng
