@@ -219,37 +219,43 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
+  // Nội dung bài viết
   postContent: {
-    fontSize: 15,
-    color: '#444',
-    marginLeft: 5,
-    marginVertical: 10,
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 10,
   },
+
+  // Swiper và media
   mediaWrapper: {
-    marginVertical: 10,
-    width: '100%', 
+    width: width * 0.9,
+    height: 300,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    overflow: 'hidden',
+    backgroundColor: '#f0f0f0',
   },
   postImage: {
-    width: '90%', 
-    height: 300,
-    borderRadius: 10,
+    width: '100%',
+    height: '100%',
     resizeMode: 'cover',
-    alignSelf: 'center', 
   },
   postVideo: {
-    width: '90%', 
-    height: 300,
-    backgroundColor: '#000',
-    borderRadius: 10,
-    alignSelf: 'center', 
+    width: '100%',
+    height: '100%',
   },
+
+  // Các nút tương tác
   postInteractionContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingTop: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
     marginTop: 10,
+  },
+  interactionText: {
+    fontSize: 14,
+    color: '#333',
+    marginLeft: 5,
   },
   noMediaText: {
     textAlign: 'center',

@@ -6,7 +6,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { getUserInfoApi, updateProfileApi, uploadImageApi } from '../../api/profileapi';
 import { fetchPostDetail, getUserPostsApi, deleteArticleApi } from '../../api/postapi';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import Carousel from 'react-native-reanimated-carousel';
+import Swiper from 'react-native-swiper';
 import Video from 'react-native-video';
 import styles from './profilestyle';
 import { Dimensions } from 'react-native';
@@ -122,13 +122,6 @@ const ProfileScreen = ({ route, userId, navigation }) => {
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchProfile();
-      fetchUserPosts();
-    }, [userIdFromRoute, page])
-  );
-
   const handlePostPress = async (articleId, ownerId) => {
     try {
       const articleDetail = await fetchPostDetail(articleId, ownerId);
@@ -142,6 +135,13 @@ const ProfileScreen = ({ route, userId, navigation }) => {
       Alert.alert('Lỗi', 'Không thể lấy chi tiết bài viết');
     }
   };
+  
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfile();
+      fetchUserPosts();
+    }, [userIdFromRoute, page])
+  );
 
   // Hàm xóa bài viết
   const handleDeletePost = async () => {
@@ -156,6 +156,7 @@ const ProfileScreen = ({ route, userId, navigation }) => {
     }
   };
 
+  // Hàm render bài viết
   const renderPostItem = ({ item }) => {
     const mediaData = [
       ...item.image_article.map((image, index) => ({
@@ -165,27 +166,11 @@ const ProfileScreen = ({ route, userId, navigation }) => {
       })),
       item.video_article ? { type: 'video', url: item.video_article, key: 'video' } : null,
     ].filter(Boolean);
-
-    const renderMediaItem = ({ item }) => (
-      <View style={styles.mediaWrapper}>
-        {item.type === 'image' ? (
-          <Image source={{ uri: item.url }} style={styles.postImage} />
-        ) : (
-          <Video
-            source={{ uri: item.url }}
-            style={styles.postVideo}
-            paused={playingVideoId !== item.key}
-            onLoadStart={() => setPlayingVideoId(item.key)}
-            resizeMode="cover"
-            controls
-          />
-        )}
-      </View>
-    );
-
+  
     return (
       <TouchableOpacity onPress={() => handlePostPress(item.id, item.user_id)}>
         <View style={styles.postItemContainer}>
+          {/* Header bài viết */}
           <View style={styles.postHeader}>
             <Image source={{ uri: item.user_avatar }} style={styles.avatarSmall} />
             <Text style={styles.usernamePost}>{item.username}</Text>
@@ -198,22 +183,39 @@ const ProfileScreen = ({ route, userId, navigation }) => {
               </TouchableOpacity>
             </View>
           </View>
-
+  
+          {/* Nội dung bài viết */}
           <Text style={styles.postContent}>{item.content}</Text>
-
-          {mediaData.length > 0 ? (
-            <Carousel
-              loop
-              width={width * 0.9}
-              height={300}
-              data={mediaData}
-              renderItem={renderMediaItem}
-              scrollAnimationDuration={1000}
-            />
-          ) : (
-            <Text style={styles.noMediaText}>No media available</Text>
+  
+          {/* Swiper cho media */}
+          {mediaData.length > 0 && (
+            <View style={{ height: 300, marginVertical: 10 }}>
+              <Swiper
+                style={{ height: 300 }}
+                showsPagination={true}
+                loop={true}
+              >
+                {mediaData.map((media) => (
+                  <View key={media.key} style={styles.mediaWrapper}>
+                    {media.type === 'image' ? (
+                      <Image source={{ uri: media.url }} style={styles.postImage} />
+                    ) : (
+                      <Video
+                        source={{ uri: media.url }}
+                        style={styles.postVideo}
+                        paused={playingVideoId !== media.key}
+                        onLoadStart={() => setPlayingVideoId(media.key)}
+                        resizeMode="cover"
+                        controls
+                      />
+                    )}
+                  </View>
+                ))}
+              </Swiper>
+            </View>
           )}
-
+  
+          {/* Tương tác bài viết */}
           <View style={styles.postInteractionContainer}>
             <TouchableOpacity style={styles.interactionButton}>
               <Icon name="favorite-border" size={20} color="#000" />
@@ -227,7 +229,7 @@ const ProfileScreen = ({ route, userId, navigation }) => {
         </View>
       </TouchableOpacity>
     );
-  };
+  };  
 
   if (loading) {
     return (
@@ -242,7 +244,7 @@ const ProfileScreen = ({ route, userId, navigation }) => {
       <FlatList
         data={posts}
         renderItem={renderPostItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id.toString()} 
         onEndReached={() => setPage(page + 1)}
         onEndReachedThreshold={0.5}
         ListHeaderComponent={

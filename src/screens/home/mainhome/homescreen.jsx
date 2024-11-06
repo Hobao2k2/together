@@ -77,7 +77,7 @@ const HomeScreen = ({ userId }) => {
         <FlatList
           data={posts}
           renderItem={renderPost}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.id.toString()} // Đảm bảo 'id' là duy nhất
           onEndReached={loadMorePosts}
           onEndReachedThreshold={0.5}
           ListFooterComponent={loading ? <ActivityIndicator size="small" color="#0000ff" /> : null}
