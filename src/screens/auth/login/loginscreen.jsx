@@ -32,9 +32,6 @@ const LoginScreen = ({ navigation, setIsLoggedIn, setUserId }) => {  // Thêm se
             setIsLoggedIn(true);
             setUserId(userId); // Lưu userId để dùng sau này
         
-            // Điều hướng đến màn hình Profile và truyền userId
-            navigation.navigate('Profile', { userId });
-        
         } catch (error) {
           console.log('Lỗi đăng nhập:', error);
       

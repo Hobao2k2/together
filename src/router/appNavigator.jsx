@@ -17,10 +17,12 @@ import ResetPasswordScreen from '../screens/auth/forgotpassword/resetpasswordscr
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
-function ProfileStackNavigator() {
+function ProfileStackNavigator({ setIsLoggedIn }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="ProfileStack" component={ProfileScreen} />
+      <Stack.Screen name="ProfileStack">
+        {props => <ProfileScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
+      </Stack.Screen>
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
       <Stack.Screen name="EditPost" component={EditPostScreen} />
     </Stack.Navigator>
@@ -58,19 +60,19 @@ const AddPostButton = forwardRef(({ color }, ref) => (
   />
 ));
 
-function MainTabNavigator() {
+function MainTabNavigator({ setIsLoggedIn }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName;
-          if (route.name === 'Home') {
+          if (route.name === 'HomeScreen') {
             iconName = 'home';
           } else if (route.name === 'Search') {
             iconName = 'search';
           } else if (route.name === 'Notifications') {
             iconName = 'notifications';
-          } else if (route.name === 'Profile') {
+          } else if (route.name === 'ProfileScreen') {
             iconName = 'person';
           }
           return <Icon name={iconName} size={size} color={color} />;
@@ -88,7 +90,7 @@ function MainTabNavigator() {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeStackNavigator} />
+      <Tab.Screen name="HomeScreen" component={HomeStackNavigator} />
       <Tab.Screen name="Search" component={HomeStackNavigator} />
       <Tab.Screen
         name="AddPost"
@@ -97,8 +99,10 @@ function MainTabNavigator() {
           tabBarIcon: ({ color }) => <AddPostButton color={color} />,
         }}
       />
-      <Tab.Screen name="Notifications" component={ProfileStackNavigator} />
-      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
+      <Tab.Screen name="Notifications" component={HomeStackNavigator} />
+      <Tab.Screen name="ProfileScreen">
+        {props => <ProfileStackNavigator {...props} setIsLoggedIn={setIsLoggedIn} />}
+      </Tab.Screen>
     </Tab.Navigator>
   );
 }
@@ -132,9 +136,7 @@ function AppNavigator() {
     const checkLoginStatus = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
-        if (token) {
-          setIsLoggedIn(true);
-        }
+        setIsLoggedIn(!!token);
       } catch (error) {
         console.error('Lỗi khi kiểm tra trạng thái đăng nhập:', error);
       } finally {
@@ -145,20 +147,13 @@ function AppNavigator() {
   }, []);
 
   if (loading) {
-    return null; // hoặc là một màn hình chờ (SplashScreen)
+    return null; // Hoặc hiển thị màn hình chờ (SplashScreen)
   }
 
-  return (
-    <>
-      {isLoggedIn ? (
-        <MainTabNavigator />
-      ) : (
-        <AuthStackNavigator
-          setIsLoggedIn={setIsLoggedIn}
-          setUserId={setUserId}
-        />
-      )}
-    </>
+  return isLoggedIn ? (
+    <MainTabNavigator setIsLoggedIn={setIsLoggedIn} />
+  ) : (
+    <AuthStackNavigator setIsLoggedIn={setIsLoggedIn} setUserId={setUserId} />
   );
 }
 
