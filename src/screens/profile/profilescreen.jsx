@@ -16,6 +16,7 @@ const { width } = Dimensions.get('window');
 const ProfileScreen = ({ route, userId, navigation }) => {
   const userIdFromRoute = route?.params?.userId || userId;
 
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [page, setPage] = useState(0);  
@@ -27,6 +28,15 @@ const ProfileScreen = ({ route, userId, navigation }) => {
   const [confirmDeleteVisible, setConfirmDeleteVisible] = useState(false);
   const [selectedArticleId, setSelectedArticleId] = useState(null);
   const [playingVideoId, setPlayingVideoId] = useState(null);
+  const [menuPostVisible, setMenuPostVisible] = useState(false); 
+  const [activeMenuPostId, setActiveMenuPostId] = useState(null);
+
+  // Hàm xử lý đăng xuất
+  const handleLogout = () => {
+    // Logic đăng xuất (xóa token, trạng thái đăng nhập, v.v.)
+    Alert.alert("Đăng xuất", "Bạn đã đăng xuất thành công!");
+    navigation.replace("Login"); // Điều hướng về màn hình Login
+  };
 
   const [profile, setProfile] = useState({
     username: '',
@@ -144,27 +154,64 @@ const ProfileScreen = ({ route, userId, navigation }) => {
   );
 
   // Hàm xóa bài viết
-  const handleDeletePost = async () => {
+  const handleDeletePost = async (postId) => {
     try {
-      await deleteArticleApi(selectedArticleId);
+      // Gọi API xóa bài viết
+      await deleteArticleApi(postId);
+
+      // Thông báo thành công
       Alert.alert("Thành công", "Bài viết đã được xóa!");
-      setPosts(posts.filter(post => post.id !== selectedArticleId));
-      setConfirmDeleteVisible(false);
+
+      // Cập nhật danh sách bài viết
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
     } catch (error) {
       console.error("Lỗi khi xóa bài viết:", error);
+
+      // Thông báo lỗi
       Alert.alert("Lỗi", "Không thể xóa bài viết");
+    } finally {
+      // Đóng menu trong mọi trường hợp
+      setMenuPostVisible(false);
+
+      // Đóng modal xác nhận (nếu có)
+      setConfirmDeleteVisible(false);
     }
   };
 
+
+  // Hàm sửa bài viết
+  const handleEditPost = (postId, navigation) => {
+    const postToEdit = posts.find((post) => post.id === postId); 
+  
+    if (postToEdit) {
+      navigation.navigate('EditPost', {
+        articleId: postToEdit.id,
+        userId: postToEdit.user_id,
+        content: postToEdit.content,
+        accessStatus: postToEdit.access_status || 'PRIVATE',
+        images: postToEdit.image_article || [],
+        video: postToEdit.video_article ? { uri: postToEdit.video_article } : null,
+      });
+    } else {
+      Alert.alert("Lỗi", "Không thể tìm thấy thông tin bài viết.");
+    }
+  };
+  
+
   // Hàm render bài viết
   const renderPostItem = ({ item }) => {
+    // Kiểm tra xem menu của bài viết hiện tại có đang mở không
+    const isMenuOpen = activeMenuPostId === item.id;
+  
+    // Xử lý media (hình ảnh và video)
+    const uniqueImages = Array.from(new Set(item.image_article)); // Loại bỏ hình ảnh trùng lặp
     const mediaData = [
-      ...item.image_article.map((image, index) => ({
+      ...uniqueImages.map((image) => ({
         type: 'image',
         url: image,
-        key: `image-${index}`,
+        key: `image-${image}`,
       })),
-      item.video_article ? { type: 'video', url: item.video_article, key: 'video' } : null,
+      item.video_article ? { type: 'video', url: item.video_article, key: `video-${item.video_article}` } : null,
     ].filter(Boolean);
   
     return (
@@ -174,15 +221,39 @@ const ProfileScreen = ({ route, userId, navigation }) => {
           <View style={styles.postHeader}>
             <Image source={{ uri: item.user_avatar }} style={styles.avatarSmall} />
             <Text style={styles.usernamePost}>{item.username}</Text>
-            <View style={{ flexDirection: 'row', marginLeft: 'auto' }}>
-              <TouchableOpacity style={styles.menuButton}>
-                <Icon name="delete" size={24} color="#e74c3c" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.menuButton}>
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => setActiveMenuPostId(isMenuOpen ? null : item.id)} // Chỉ mở menu của bài viết này
+            >
+              <Icon name="more-vert" size={24} color="#333" />
+            </TouchableOpacity>
+          </View>
+  
+          {/* Menu Popup */}
+          {isMenuOpen && (
+            <View style={styles.menupostContainer}>
+              <TouchableOpacity
+                style={styles.menupostOption}
+                onPress={() => {
+                  setActiveMenuPostId(null); // Đóng menu
+                  handleEditPost(item.id, navigation); // Chuyển đến màn hình chỉnh sửa
+                }}
+              >
                 <Icon name="edit" size={24} color="#4a90e2" />
+                <Text style={styles.menupostText}>Sửa bài viết</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.menupostOption}
+                onPress={() => {
+                  setActiveMenuPostId(null); // Đóng menu
+                  handleDeletePost(item.id); // Xóa bài viết
+                }}
+              >
+                <Icon name="delete" size={24} color="#e74c3c" />
+                <Text style={styles.menupostText}>Xóa bài viết</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          )}
   
           {/* Nội dung bài viết */}
           <Text style={styles.postContent}>{item.content}</Text>
@@ -190,11 +261,7 @@ const ProfileScreen = ({ route, userId, navigation }) => {
           {/* Swiper cho media */}
           {mediaData.length > 0 && (
             <View style={{ height: 300, marginVertical: 10 }}>
-              <Swiper
-                style={{ height: 300 }}
-                showsPagination={true}
-                loop={true}
-              >
+              <Swiper style={{ height: 300 }} showsPagination={true} loop={true}>
                 {mediaData.map((media) => (
                   <View key={media.key} style={styles.mediaWrapper}>
                     {media.type === 'image' ? (
@@ -262,7 +329,7 @@ const ProfileScreen = ({ route, userId, navigation }) => {
                   <Icon name="arrow-back" size={28} color="#fff" style={styles.backIcon} />
                 </TouchableOpacity>
                 <Text style={styles.headerText}>My Profile</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => setLogoutModalVisible(true)}>
                   <Icon name="more-vert" size={28} color="#fff" style={styles.menuIcon} />
                 </TouchableOpacity>
               </View>
