@@ -9,6 +9,72 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#f8f9fa',
   },
+  menuIconContainer: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    zIndex: 10,
+  },
+  menu: {
+    position: 'absolute',
+    top: 60,
+    right: 20,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    padding: 10,
+    zIndex: 10,
+  },
+  menuOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
+  menuOptionText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#333',
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    paddingVertical: 20,
+    paddingHorizontal: 15,
+    alignItems: 'center',
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: '#555',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  confirmButton: {
+    flex: 1,
+    marginLeft: 5,
+    backgroundColor: '#e74c3c',
+    borderRadius: 5,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  confirmButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
   wallpaperContainer: {
     width: width * 0.9,
     height: width * 0.5,
@@ -154,12 +220,6 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
   },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 15,
-    color: '#333',
-  },
   modalInput: {
     width: '100%',
     height: 45,
@@ -303,7 +363,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  confirmDeleteContainer: {
+  confirmDeleteText: {
+    fontSize: 18,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  cancelButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
     width: width * 0.75,
     backgroundColor: '#fff',
     borderRadius: 15,
@@ -315,29 +391,44 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
   },
-  confirmDeleteText: {
+  modalTitle: {
     fontSize: 18,
+    fontWeight: 'bold',
     color: '#333',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: '#555',
     textAlign: 'center',
     marginBottom: 20,
   },
-  confirmDeleteButtons: {
+  modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
   },
-  confirmDeleteButton: {
-    backgroundColor: '#4a90e2',
+  cancelButton: {
+    backgroundColor: '#ddd',
     borderRadius: 5,
     paddingVertical: 10,
     width: '45%',
     alignItems: 'center',
   },
   cancelButtonText: {
-    color: '#fff',
+    color: '#333',
     fontSize: 16,
+    fontWeight: 'bold',
   },
-  confirmDeleteButtonText: {
+  confirmButton: {
+    backgroundColor: '#4a90e2',
+    borderRadius: 5,
+    paddingVertical: 10,
+    width: '45%',
+    alignItems: 'center',
+  },
+  confirmButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',

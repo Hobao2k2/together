@@ -10,13 +10,15 @@ import Swiper from 'react-native-swiper';
 import Video from 'react-native-video';
 import styles from './profilestyle';
 import { Dimensions } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
-const ProfileScreen = ({ route, userId, navigation }) => {
+const ProfileScreen = ({ route, userId, navigation, setIsLoggedIn }) => {
   const userIdFromRoute = route?.params?.userId || userId;
 
-  const [logoutModalVisible, setLogoutModalVisible] = useState(false);
+  const [menuProfileVisible, setMenuProfileVisible] = useState(false); 
+  const [logoutModalVisible, setLogoutModalVisible] = useState(false); 
   const [posts, setPosts] = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [page, setPage] = useState(0);  
@@ -32,10 +34,19 @@ const ProfileScreen = ({ route, userId, navigation }) => {
   const [activeMenuPostId, setActiveMenuPostId] = useState(null);
 
   // Hàm xử lý đăng xuất
-  const handleLogout = () => {
-    // Logic đăng xuất (xóa token, trạng thái đăng nhập, v.v.)
-    Alert.alert("Đăng xuất", "Bạn đã đăng xuất thành công!");
-    navigation.replace("Login"); // Điều hướng về màn hình Login
+  const handleLogout = async () => {
+    try {
+      // Xóa token khỏi AsyncStorage
+      await AsyncStorage.removeItem('userToken');
+  
+      // Cập nhật trạng thái đăng nhập
+      setIsLoggedIn(false);
+  
+      Alert.alert('Đăng xuất', 'Bạn đã đăng xuất thành công!');
+    } catch (error) {
+      console.error('Lỗi khi đăng xuất:', error);
+      Alert.alert('Lỗi', 'Không thể đăng xuất. Vui lòng thử lại.');
+    }
   };
 
   const [profile, setProfile] = useState({
@@ -121,16 +132,26 @@ const ProfileScreen = ({ route, userId, navigation }) => {
     try {
       const response = await getUserPostsApi(page, pageSize);
       const postsData = response.result;
-
+  
       if (Array.isArray(postsData)) {
-        setPosts((prevPosts) => [...prevPosts, ...postsData]);
+        setPosts((prevPosts) => {
+          // Lọc các bài viết trùng lặp
+          const uniquePosts = [...prevPosts, ...postsData].reduce((acc, current) => {
+            // Kiểm tra xem bài viết có trùng với bài viết đã có trong acc không
+            const exists = acc.find(item => item.id === current.id);
+            if (!exists) acc.push(current);  // Nếu chưa có thì thêm vào
+            return acc;
+          }, []);
+          
+          return uniquePosts;
+        });
       }
     } catch (error) {
       console.error('Lỗi khi lấy bài viết:', error);
     } finally {
       setPostsLoading(false);
     }
-  };
+  };  
 
   const handlePostPress = async (articleId, ownerId) => {
     try {
@@ -201,42 +222,41 @@ const ProfileScreen = ({ route, userId, navigation }) => {
   // Hàm render bài viết
   const renderPostItem = ({ item }) => {
     // Kiểm tra xem menu của bài viết hiện tại có đang mở không
-    const isMenuOpen = activeMenuPostId === item.id;
-  
-    // Xử lý media (hình ảnh và video)
-    const uniqueImages = Array.from(new Set(item.image_article)); // Loại bỏ hình ảnh trùng lặp
+    const uniqueImages = Array.from(new Set(item.image_article || []));
     const mediaData = [
       ...uniqueImages.map((image) => ({
         type: 'image',
         url: image,
-        key: `image-${image}`,
+        key: `post-${item.id}-image-${image}`,
       })),
-      item.video_article ? { type: 'video', url: item.video_article, key: `video-${item.video_article}` } : null,
+      item.video_article
+        ? { type: 'video', url: item.video_article, key: `post-${item.id}-video` }
+        : null,
     ].filter(Boolean);
-  
+
     return (
       <TouchableOpacity onPress={() => handlePostPress(item.id, item.user_id)}>
         <View style={styles.postItemContainer}>
           {/* Header bài viết */}
           <View style={styles.postHeader}>
-            <Image source={{ uri: item.user_avatar }} style={styles.avatarSmall} />
+            <Image source={item.user_avatar ? { uri: item.user_avatar } : require('../../../assets/image/avatar_icon.png')} style={styles.avatarSmall} />
             <Text style={styles.usernamePost}>{item.username}</Text>
             <TouchableOpacity
               style={styles.menuButton}
-              onPress={() => setActiveMenuPostId(isMenuOpen ? null : item.id)} // Chỉ mở menu của bài viết này
+              onPress={() => setActiveMenuPostId(activeMenuPostId === item.id ? null : item.id)}
             >
               <Icon name="more-vert" size={24} color="#333" />
             </TouchableOpacity>
           </View>
-  
+
           {/* Menu Popup */}
-          {isMenuOpen && (
+          {activeMenuPostId === item.id && (
             <View style={styles.menupostContainer}>
               <TouchableOpacity
                 style={styles.menupostOption}
                 onPress={() => {
-                  setActiveMenuPostId(null); // Đóng menu
-                  handleEditPost(item.id, navigation); // Chuyển đến màn hình chỉnh sửa
+                  setActiveMenuPostId(null);
+                  handleEditPost(item.id, navigation);
                 }}
               >
                 <Icon name="edit" size={24} color="#4a90e2" />
@@ -245,8 +265,8 @@ const ProfileScreen = ({ route, userId, navigation }) => {
               <TouchableOpacity
                 style={styles.menupostOption}
                 onPress={() => {
-                  setActiveMenuPostId(null); // Đóng menu
-                  handleDeletePost(item.id); // Xóa bài viết
+                  setActiveMenuPostId(null);
+                  handleDeletePost(item.id);
                 }}
               >
                 <Icon name="delete" size={24} color="#e74c3c" />
@@ -254,14 +274,14 @@ const ProfileScreen = ({ route, userId, navigation }) => {
               </TouchableOpacity>
             </View>
           )}
-  
+
           {/* Nội dung bài viết */}
           <Text style={styles.postContent}>{item.content}</Text>
-  
+
           {/* Swiper cho media */}
           {mediaData.length > 0 && (
             <View style={{ height: 300, marginVertical: 10 }}>
-              <Swiper style={{ height: 300 }} showsPagination={true} loop={true}>
+              <Swiper style={{ height: 300 }} showsPagination loop>
                 {mediaData.map((media) => (
                   <View key={media.key} style={styles.mediaWrapper}>
                     {media.type === 'image' ? (
@@ -281,7 +301,7 @@ const ProfileScreen = ({ route, userId, navigation }) => {
               </Swiper>
             </View>
           )}
-  
+
           {/* Tương tác bài viết */}
           <View style={styles.postInteractionContainer}>
             <TouchableOpacity style={styles.interactionButton}>
@@ -296,7 +316,7 @@ const ProfileScreen = ({ route, userId, navigation }) => {
         </View>
       </TouchableOpacity>
     );
-  };  
+  };   
 
   if (loading) {
     return (
@@ -311,8 +331,8 @@ const ProfileScreen = ({ route, userId, navigation }) => {
       <FlatList
         data={posts}
         renderItem={renderPostItem}
-        keyExtractor={(item) => item.id.toString()} 
-        onEndReached={() => setPage(page + 1)}
+        keyExtractor={(item) => item.id || item.uniqueIdentifier}
+        onEndReached={() => fetchUserPosts()}  s
         onEndReachedThreshold={0.5}
         ListHeaderComponent={
           <>
@@ -329,9 +349,29 @@ const ProfileScreen = ({ route, userId, navigation }) => {
                   <Icon name="arrow-back" size={28} color="#fff" style={styles.backIcon} />
                 </TouchableOpacity>
                 <Text style={styles.headerText}>My Profile</Text>
-                <TouchableOpacity onPress={() => setLogoutModalVisible(true)}>
+                {/* Menu icon */}
+                <TouchableOpacity
+                  onPress={() => setMenuProfileVisible(!menuProfileVisible)} // Hiển thị menu khi nhấn vào icon
+                  style={styles.menuIconContainer}
+                >
                   <Icon name="more-vert" size={28} color="#fff" style={styles.menuIcon} />
                 </TouchableOpacity>
+
+                {/* Menu */}
+                {menuProfileVisible && (
+                  <View style={styles.menu}>
+                    <TouchableOpacity
+                      style={styles.menuOption}
+                      onPress={() => {
+                        setMenuProfileVisible(false); // Đóng menu
+                        setLogoutModalVisible(true); // Hiển thị modal xác nhận đăng xuất
+                      }}
+                    >
+                      <Icon name="logout" size={24} color="#e74c3c" />
+                      <Text style={styles.menuOptionText}>Đăng xuất</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
               </View>
               <View style={styles.avatarWrapper}>
                 <TouchableOpacity onPress={() => handleUploadImage('avatar')} style={styles.avatarContainer}>
@@ -355,7 +395,7 @@ const ProfileScreen = ({ route, userId, navigation }) => {
         ListFooterComponent={postsLoading ? <ActivityIndicator size="large" color="#000" /> : null}
       />
 
-<Modal
+      <Modal
         animationType="slide"
         transparent={true}
         visible={modalVisible}
@@ -404,17 +444,21 @@ const ProfileScreen = ({ route, userId, navigation }) => {
           </View>
         </View>
       </Modal>
-            {/* Modal xác nhận xóa bài viết */}
-            <Modal
+
+      {/* Modal xác nhận xóa bài viết */}
+      <Modal
         animationType="fade"
         transparent={true}
         visible={confirmDeleteVisible}
         onRequestClose={() => setConfirmDeleteVisible(false)}
       >
         <View style={styles.modalBackground}>
-          <View style={styles.confirmDeleteContainer}>
-            <Text style={styles.confirmDeleteText}>Bạn có chắc chắn muốn xóa bài viết này không?</Text>
-            <View style={styles.confirmDeleteButtons}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Xác nhận xóa bài viết</Text>
+            <Text style={styles.modalMessage}>
+              Bạn có chắc chắn muốn xóa bài viết này không?
+            </Text>
+            <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={() => setConfirmDeleteVisible(false)}
@@ -422,10 +466,41 @@ const ProfileScreen = ({ route, userId, navigation }) => {
                 <Text style={styles.cancelButtonText}>Hủy</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.confirmDeleteButton}
+                style={styles.confirmButton}
                 onPress={handleDeletePost}
               >
-                <Text style={styles.confirmDeleteButtonText}>Xóa</Text>
+                <Text style={styles.confirmButtonText}>Xóa</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal xác nhận đăng xuất */}
+      <Modal
+        transparent={true}
+        animationType="fade"
+        visible={logoutModalVisible}
+        onRequestClose={() => setLogoutModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Xác nhận đăng xuất</Text>
+            <Text style={styles.modalMessage}>
+              Bạn có chắc chắn muốn đăng xuất không?
+            </Text>
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setLogoutModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Hủy</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.confirmButton}
+                onPress={handleLogout}
+              >
+                <Text style={styles.confirmButtonText}>Đăng xuất</Text>
               </TouchableOpacity>
             </View>
           </View>

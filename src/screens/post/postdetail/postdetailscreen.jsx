@@ -21,36 +21,36 @@ const PostDetailScreen = ({ route }) => {
     );
   }
 
-  // Tạo dữ liệu cho Swiper trực tiếp
+  // Tạo dữ liệu cho Swiper với key duy nhất
   const mediaData = [
-    ...(postDetail.image_article || []).map((image, index) => ({
+    ...(postDetail.image_article || []).map((image) => ({
       type: 'image',
       url: image,
-      index: `${index + 1}`,
+      key: `image-${image}`,
     })),
     postDetail.video_article
       ? {
           type: 'video',
           url: postDetail.video_article,
-          index: `${(postDetail.image_article || []).length + 1}`,
+          key: `video-${postDetail.video_article}`,
         }
       : null,
   ].filter(Boolean);
 
-  // Render một item của Swiper
-  const renderMediaItem = (item, index) => (
-    <View style={styles.mediaWrapper} key={index}>
+  // Render từng item trong Swiper
+  const renderMediaItem = (item) => (
+    <View style={styles.mediaWrapper} key={item.key}>
       <Text style={styles.indexLabel}>
-        {item.index}/{mediaData.length}
+        {mediaData.findIndex((media) => media.key === item.key) + 1}/{mediaData.length}
       </Text>
       {item.type === 'image' ? (
         <Image source={{ uri: item.url }} style={styles.image} />
       ) : (
-        <Video 
-          source={{ uri: item.url }} 
-          style={styles.video} 
-          controls 
-          resizeMode="cover" 
+        <Video
+          source={{ uri: item.url }}
+          style={styles.video}
+          controls
+          resizeMode="cover"
           paused={true} // Tắt tự động phát
         />
       )}
@@ -102,16 +102,16 @@ const PostDetailScreen = ({ route }) => {
 
       {/* Bình luận */}
       <View style={styles.commentsContainer}>
-        {(postDetail.comments || []).map((comment, index) => (
-          <View key={`${comment.comment_id}-${index}`} style={styles.comment}>
+        {(postDetail.comments || []).map((comment) => (
+          <View key={`comment-${comment.comment_id}`} style={styles.comment}>
             <Image source={{ uri: comment.avatar_path }} style={styles.commentAvatar} />
             <View style={styles.commentContent}>
               <Text style={styles.commentUsername}>{comment.username}</Text>
               <Text>{comment.content}</Text>
 
               {/* Hiển thị phản hồi cho bình luận nếu có */}
-              {(comment.child_comments || []).map((child, childIndex) => (
-                <View key={`${child.comment_id}-${childIndex}`} style={styles.childComment}>
+              {(comment.child_comments || []).map((child) => (
+                <View key={`child-comment-${child.comment_id}`} style={styles.childComment}>
                   <Image source={{ uri: child.avatar_path }} style={styles.commentAvatar} />
                   <View style={styles.commentContent}>
                     <Text style={styles.commentUsername}>{child.username}</Text>
