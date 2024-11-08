@@ -9,6 +9,7 @@ import com.example.together.service.PrivateMessageService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,11 +34,32 @@ public class PrivateMessageController {
                 .build();
     }
 
-    @PostMapping("/private/sender/id")
-    ApiResponse<List<PrivateMessageResponse>> getSenderMessageToUserId(@RequestBody PrivateMessageRequest privateMessageRequest){
+
+    @PostMapping("/private/sender/{key}")  //tim kiem tin nhan trong doan chat
+    ApiResponse<List<PrivateMessageResponse>> getSenderMessageToKey(
+            @RequestBody PrivateMessageRequest privateMessageRequest
+            ,@PathVariable String key
+    ){
         return ApiResponse.<List<PrivateMessageResponse>>builder()
-                .result(privateMessageService.getSenderMessageToUserId(privateMessageRequest.getUserSenderId(),
-                        privateMessageRequest.getUserReceiverId()))
+                .result(privateMessageService.getSenderMessageToKey(privateMessageRequest.getUserSenderId()
+                ,privateMessageRequest.getUserReceiverId(),key))
+                .build();
+    }
+
+    @PostMapping("/sender/id/{page}/{size}") //phan trang tin nhan giua 2 user
+    public ApiResponse<Page<PrivateMessageResponse>> getSenderMessageToUserId(
+            @RequestBody PrivateMessageRequest privateMessageRequest,
+            @PathVariable int page,@PathVariable int size) {
+
+        Page<PrivateMessageResponse> result = privateMessageService.getSenderMessageToUserId(
+                privateMessageRequest.getUserSenderId(),
+                privateMessageRequest.getUserReceiverId(),
+                page,
+                size
+        );
+
+        return ApiResponse.<Page<PrivateMessageResponse>>builder()
+                .result(result)
                 .build();
     }
 }

@@ -2,11 +2,14 @@ package com.example.together.service;
 
 import com.example.together.dto.request.AuthenticationRequest;
 import com.example.together.dto.request.IntrospectRequest;
+import com.example.together.dto.request.LogoutRequest;
 import com.example.together.dto.response.AuthenticationResponse;
 import com.example.together.dto.response.IntrospectResponse;
 import com.example.together.exception.AppException;
 import com.example.together.exception.ErrorCode;
 import com.example.together.mapper.UserMapper;
+import com.example.together.model.InvalidatedToken;
+import com.example.together.repository.InvalidatedTokenRepository;
 import com.example.together.repository.UserRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -35,7 +38,7 @@ import java.util.UUID;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationService {
     UserRepository userRepository;
-    UserMapper userMapper;
+    InvalidatedTokenRepository invalidatedTokenRepository;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -44,20 +47,16 @@ public class AuthenticationService {
     public IntrospectResponse introspect(IntrospectRequest request)
             throws JOSEException, ParseException {
         var token = request.getToken();
+        boolean isValid = true;
 
-        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
-
-        SignedJWT signedJWT = SignedJWT.parse(token);
-        var user = userRepository.findByEmail(signedJWT.getJWTClaimsSet().getSubject())
-                .orElseThrow(() -> new AppException(ErrorCode.INVALID_USER));
-
-        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-
-        var verified = signedJWT.verify(verifier);
+        try {
+            verifyToken(token);
+        } catch (AppException e) {
+            isValid = false;
+        }
 
         return IntrospectResponse.builder()
-                .valid(verified && expiryTime.after(new Date()))
-                .user(userMapper.toUserResponse(user))
+                .valid(isValid)
                 .build();
     }
 
@@ -78,6 +77,40 @@ public class AuthenticationService {
                 .authenticated(true)
                 .build();
     }
+
+    public void logout(LogoutRequest request) throws ParseException, JOSEException {
+        var signToken = verifyToken(request.getToken());
+
+        String jit = signToken.getJWTClaimsSet().getJWTID();
+        Date expiryTime = signToken.getJWTClaimsSet().getExpirationTime();
+
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .id(jit)
+                .expiryTime(expiryTime)
+                .build();
+
+        invalidatedTokenRepository.save(invalidatedToken);
+    }
+
+    private SignedJWT verifyToken(String token) throws JOSEException, ParseException {
+        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
+
+        var verified = signedJWT.verify(verifier);
+
+        if (!(verified && expiryTime.after(new Date())))
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        if (invalidatedTokenRepository
+                .existsById(signedJWT.getJWTClaimsSet().getJWTID()))
+            throw new AppException(ErrorCode.UNAUTHENTICATED);
+
+        return signedJWT;
+    }
+
 
     private String generateToken(String email) {
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);

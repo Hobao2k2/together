@@ -1,6 +1,7 @@
 package com.example.together.exception;
 
 import com.example.together.dto.response.ApiResponse;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -59,6 +60,17 @@ public class GlobalExceptionHandler {
 
         apiResponse.setCode(ErrorCode.UNAUTHENTICATED.getCode());
         apiResponse.setMessage(ErrorCode.UNAUTHENTICATED.getMessage());
+
+        return ResponseEntity.badRequest().body(apiResponse);
+    }
+
+    // Bắt exception cho InvalidDataAccessApiUsageException
+    @ExceptionHandler(value = InvalidDataAccessApiUsageException.class)
+    ResponseEntity<ApiResponse> handleInvalidDataAccessApiUsageException(Exception exception) {
+        ApiResponse apiResponse = new ApiResponse();
+
+        apiResponse.setCode(ErrorCode.INVALID_DATA_ACCESS.getCode());
+        apiResponse.setMessage(ErrorCode.INVALID_DATA_ACCESS.getMessage());
 
         return ResponseEntity.badRequest().body(apiResponse);
     }

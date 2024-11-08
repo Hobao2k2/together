@@ -11,6 +11,8 @@ import com.example.together.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -39,11 +41,27 @@ public class PrivateMessageService {
         return privateMessageRepository.findBySender(user).stream().map(privateMessageMapper::toPrivateMessageResponse).toList();
     }
 
-    public List<PrivateMessageResponse> getSenderMessageToUserId(String senderId,String receiverId){
+
+    public List<PrivateMessageResponse> getSenderMessageToKey(String senderId, String receiverId, String content) {
         User sender = userRepository.findById(senderId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_USER));
         User receiver = userRepository.findById(receiverId)
                 .orElseThrow(() -> new AppException(ErrorCode.INVALID_USER));
-        return privateMessageRepository.findBySenderAndReceiver(sender,receiver).stream().map(privateMessageMapper::toPrivateMessageResponse).toList();
+
+        return privateMessageRepository.findBySenderAndReceiverAndContentContainingIgnoreCase(sender, receiver, content)
+                .stream()
+                .map(privateMessageMapper::toPrivateMessageResponse)
+                .toList();
+    }
+
+    public Page<PrivateMessageResponse> getSenderMessageToUserId(String senderId, String receiverId, int page, int size) {
+        User sender = userRepository.findById(senderId)
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_USER));
+        User receiver = userRepository.findById(receiverId)
+                .orElseThrow(() -> new AppException(ErrorCode.INVALID_USER));
+
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return privateMessageRepository.findBySenderAndReceiver(sender, receiver, pageRequest)
+                .map(privateMessageMapper::toPrivateMessageResponse);
     }
 }

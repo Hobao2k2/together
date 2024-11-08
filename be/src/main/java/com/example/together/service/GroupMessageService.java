@@ -13,6 +13,8 @@ import com.example.together.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -33,9 +35,12 @@ public class GroupMessageService {
         groupMessageRepository.save(groupMessage);
     }
 
-    public List<GroupMessageResponse> getMessageByGroupId(Long groupId){
+
+
+    public Page<GroupMessageResponse> getPageMessageByGroupId(Long groupId,int page,int size){
         GroupChat groupChat=groupChatRepository.findById(groupId).orElseThrow(()
                 -> new AppException(ErrorCode.INVALID_GROUPCHAT));
-        return groupMessageRepository.findByGroup(groupChat).stream().map(groupMessageMapper::toGroupMessageResponse).toList();
+        PageRequest pageRequest=PageRequest.of(page,size);
+        return groupMessageRepository.findByGroup(groupChat,pageRequest).map(groupMessageMapper::toGroupMessageResponse);
     }
 }

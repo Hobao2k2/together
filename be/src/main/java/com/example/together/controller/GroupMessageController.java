@@ -8,6 +8,7 @@ import com.example.together.service.GroupMessageService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,10 +20,20 @@ import java.util.List;
 public class GroupMessageController {
     GroupMessageService groupMessageService;
 
-    @PostMapping("/private/{id}")
-    ApiResponse<List<GroupMessageResponse>> getGroupChat(@PathVariable Long id){
-        return ApiResponse.<List<GroupMessageResponse>>builder()
-                .result(groupMessageService.getMessageByGroupId(id))
+
+    @PostMapping("/private/{id}/{page}/{size}") //phan trang group message trong 1 nhom
+    ApiResponse<Page<GroupMessageResponse>> getPageGroupChat(
+            @PathVariable Long id,
+            @PathVariable int page,
+            @PathVariable int size
+    ){
+        Page<GroupMessageResponse> result = groupMessageService.getPageMessageByGroupId(
+                id,
+                page,
+                size
+        );
+        return ApiResponse.<Page<GroupMessageResponse>>builder()
+                .result(result)
                 .build();
     }
 }
