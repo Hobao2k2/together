@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import HomeScreen from '../screens/home/mainhome/homescreen';
+import SearchScreen from '../screens/search/searchscreen';
 import AddPostScreen from '../screens/post/addpost/addpostscreen';
 import ProfileScreen from '../screens/profile/profilescreen';
 import PostDetailScreen from '../screens/post/postdetail/postdetailscreen';
@@ -66,13 +67,13 @@ function MainTabNavigator({ setIsLoggedIn }) {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName;
-          if (route.name === 'HomeScreen') {
+          if (route.name === 'Home') {
             iconName = 'home';
           } else if (route.name === 'Search') {
             iconName = 'search';
           } else if (route.name === 'Notifications') {
             iconName = 'notifications';
-          } else if (route.name === 'ProfileScreen') {
+          } else if (route.name === 'Profile') {
             iconName = 'person';
           }
           return <Icon name={iconName} size={size} color={color} />;
@@ -90,8 +91,8 @@ function MainTabNavigator({ setIsLoggedIn }) {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="HomeScreen" component={HomeStackNavigator} />
-      <Tab.Screen name="Search" component={HomeStackNavigator} />
+      <Tab.Screen name="Home" component={HomeStackNavigator} />
+      <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen
         name="AddPost"
         component={AddPostScreen}
@@ -100,7 +101,7 @@ function MainTabNavigator({ setIsLoggedIn }) {
         }}
       />
       <Tab.Screen name="Notifications" component={HomeStackNavigator} />
-      <Tab.Screen name="ProfileScreen">
+      <Tab.Screen name="Profile">
         {props => <ProfileStackNavigator {...props} setIsLoggedIn={setIsLoggedIn} />}
       </Tab.Screen>
     </Tab.Navigator>
