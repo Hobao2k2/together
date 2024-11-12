@@ -28,7 +28,7 @@ const AddPostScreen = () => {
       { mediaType: 'photo', selectionLimit: 5 },
       (response) => {
         if (response.didCancel) return;
-        if (response.errorCode) return console.error('Image Picker Error:', response.errorMessage);
+        if (response.errorCode) return console.error('Lỗi khi chọn ảnh:', response.errorMessage);
 
         const validFiles = response.assets.filter(file => file.uri && file.fileName && file.type);
         const newFiles = [...imageFiles, ...validFiles];
@@ -52,7 +52,7 @@ const AddPostScreen = () => {
       { mediaType: 'video' },
       (response) => {
         if (response.didCancel) return;
-        if (response.errorCode) return console.error('Video Picker Error:', response.errorMessage);
+        if (response.errorCode) return console.error('Lỗi khi chọn video:', response.errorMessage);
 
         const video = response.assets[0];
         const totalSize = calculateTotalSize(imageFiles, video);
@@ -165,7 +165,7 @@ const AddPostScreen = () => {
 
       {videoFile && (
         <View style={styles.videoPreviewContainer}>
-          <Text>Selected Video: {videoFile.fileName}</Text>
+          <Text>Video đã chọn: {videoFile.fileName}</Text>
           <Video
             source={{ uri: videoFile.uri }}
             style={styles.videoThumbnail}
@@ -189,7 +189,7 @@ const AddPostScreen = () => {
       </TouchableOpacity>
 
       {/* Thêm Toast vào JSX */}
-      <Toast ref={(ref) => Toast.setRef(ref)} />
+      <Toast />
     </ScrollView>
   );
 };

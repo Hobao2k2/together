@@ -22,10 +22,10 @@ export const getUserCredentials = async () => {
 // API lấy thông tin người dùng
 export const getUserInfoApi = async () => {
   try {
-    const { userId, token } = await getUserCredentials();  // Lấy thông tin người dùng
+    const { userId, token } = await getUserCredentials(); 
 
     const response = await axios.get(`${BASE_URL}/users/${userId}`, {
-      headers: { Authorization: `Bearer ${token}` },  // Gửi token trong header
+      headers: { Authorization: `Bearer ${token}` }, 
     });
 
     return response.data;
@@ -77,6 +77,7 @@ export const uploadImageApi = async (photo, type) => {
   try {
     const response = await axios.post(`${BASE_URL}/users/${userId}/upload-image`, formData, {
       headers: {
+        Authorization: `Bearer ${token}` ,
         'Content-Type': 'multipart/form-data',
       },
     });

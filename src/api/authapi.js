@@ -11,13 +11,13 @@ export const loginApi = async (email, password) => {
 
     if (response.data.code === 1000 && response.data.result.authenticated) {
       const token = response.data.result.token;
-      const userId = response.data.result.id; // Lấy userId từ result.id
+      const userId = response.data.result.id; 
 
       // Lưu token và userId vào AsyncStorage
       await AsyncStorage.setItem('userToken', token);
       await AsyncStorage.setItem('userId', userId);
 
-      return { success: true, token, userId }; // Trả về token và userId
+      return { success: true, token, userId }; 
     } else {
       throw new Error('Xác thực thất bại');
     }
