@@ -1,72 +1,114 @@
 import { StyleSheet, Dimensions } from 'react-native';
 
+const { width } = Dimensions.get('window');
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f2f5',
+    backgroundColor: '#f9f9f9',
   },
-  postContainer: {
-    marginVertical: 8,
-    marginHorizontal: 16,
+
+  // Header
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 15,
     backgroundColor: '#fff',
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    elevation: 5,
   },
+  logoText: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+
+  // Post Container
+  postItemContainer: {
+    marginTop: 20,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    marginBottom: 10,
+    padding: 12,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    width: width * 0.9,
+    alignSelf: 'center',
+    elevation: 3,
+  },
+
+  // Post Header
   postHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    marginBottom: 10,
   },
-  avatar: {
+  avatarSmall: {
     width: 40,
     height: 40,
     borderRadius: 20,
     marginRight: 10,
   },
-  username: {
+  usernamePost: {
     fontWeight: 'bold',
+    color: '#333',
     fontSize: 16,
   },
+
+  // Post Content
   postContent: {
-    padding: 10,
-  },
-  contentText: {
-    fontSize: 15,
+    fontSize: 14,
+    color: '#666',
     marginBottom: 10,
-    color: '#333',
+    lineHeight: 20,
+  },
+  mediaContainer: {
+    height: width * 0.56, // Tỷ lệ 16:9 dựa trên chiều rộng màn hình
+    marginBottom: 10,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },  
+  mediaWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   postImage: {
     width: '100%',
-    height: 200,
-    borderRadius: 8,
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  postVideo: {
+    width: '100%',
+    height: '100%',
+  },
+
+  // Post Interaction Section
+  postInteractionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     marginTop: 10,
   },
-  videoText: {
-    color: 'blue',
-    textDecorationLine: 'underline',
-    marginVertical: 10,
-  },
-  postFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-  },
-  iconContainer: {
+  interactionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 10,
   },
-  footerText: {
-    marginLeft: 5,
-    color: '#666',
+  interactionText: {
     fontSize: 14,
+    color: '#333',
+    marginLeft: 5,
+  },
+
+  // No Media Fallback
+  noMediaText: {
+    textAlign: 'center',
+    color: '#9c9c9c',
+    fontSize: 14,
+    marginBottom: 10,
   },
 });
 
