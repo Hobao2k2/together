@@ -1,9 +1,12 @@
 import React from 'react';
-import { View, Text, Image, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, Image, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity, Alert } from 'react-native';
 import Video from 'react-native-video';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
+import Swiper from 'react-native-swiper';
+import { getUserCredentials } from '../../../api/profileapi';
 import styles from './postdetailstyle';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -12,14 +15,34 @@ const PostDetailScreen = ({ route }) => {
   const { postDetail } = route.params;
 
   // Hàm chuyển sang màn hình Profile
-  const handleNavigateToProfile = (targetUserId) => {
+  const handleNavigateToProfile = async (targetUserId) => {
     if (!targetUserId) {
       console.error('Không tìm thấy userId để chuyển đến trang cá nhân.');
+      Alert.alert('Lỗi', 'Không thể chuyển đến trang cá nhân do thiếu thông tin người dùng.');
       return;
     }
-    navigation.navigate('Profile', {
-      userId: targetUserId, // Truyền userId của tài khoản
-    });
+  
+    try {
+      // Lấy userId đang đăng nhập từ AsyncStorage
+      const { userId } = await getUserCredentials();
+  
+      console.log('Navigating to Profile. TargetUserId:', targetUserId, 'CurrentUserId:', userId);
+  
+      if (targetUserId === userId) {
+        // Nếu targetUserId trùng với userId hiện tại, chuyển đến màn hình Profile
+        navigation.navigate('Profile', {
+          userId: targetUserId,
+        });
+      } else {
+        // Nếu không, chuyển đến màn hình ProfileOtherUserScreen
+        navigation.navigate('ProfileOtherUser', {
+          userId: targetUserId,
+        });
+      }
+    } catch (error) {
+      console.error('Lỗi khi lấy thông tin người dùng:', error);
+      Alert.alert('Lỗi', 'Không thể thực hiện điều hướng do lỗi dữ liệu.');
+    }
   };
 
   if (!postDetail) {
@@ -31,7 +54,7 @@ const PostDetailScreen = ({ route }) => {
     );
   }
 
-  // Tạo dữ liệu cho Swiper với key duy nhất
+  // Tạo dữ liệu cho Swiper
   const mediaData = [
     ...(postDetail.image_article || []).map((image) => ({
       type: 'image',
@@ -76,11 +99,11 @@ const PostDetailScreen = ({ route }) => {
 
       {/* Thông tin người đăng */}
       <View style={styles.userInfoContainer}>
-        {/* Avatar - Điều hướng đến ProfileScreen */}
+        {/* Avatar */}
         <TouchableOpacity onPress={() => handleNavigateToProfile(postDetail.user_id)}>
           <Image source={{ uri: postDetail.user_avatar }} style={styles.avatar} />
         </TouchableOpacity>
-        {/* Username - Điều hướng đến ProfileScreen */}
+        {/* Username */}
         <TouchableOpacity onPress={() => handleNavigateToProfile(postDetail.user_id)}>
           <Text style={styles.username}>{postDetail.username}</Text>
         </TouchableOpacity>
@@ -89,16 +112,10 @@ const PostDetailScreen = ({ route }) => {
       {/* Nội dung bài viết */}
       <Text style={styles.content}>{postDetail.content}</Text>
 
-      {/* Swiper */}
+      {/* Swiper cho media */}
       {mediaData.length > 0 && (
         <View style={{ flex: 1, alignItems: 'center', marginBottom: 20 }}>
-          <Swiper
-            loop
-            showsPagination
-            width={width}
-            height={300}
-            autoplay={false} // Tắt tự động phát
-          >
+          <Swiper loop showsPagination width={width} height={300} autoplay={false}>
             {mediaData.map(renderMediaItem)}
           </Swiper>
         </View>
@@ -120,26 +137,26 @@ const PostDetailScreen = ({ route }) => {
       <View style={styles.commentsContainer}>
         {(postDetail.comments || []).map((comment) => (
           <View key={`comment-${comment.comment_id}`} style={styles.comment}>
-            {/* Avatar - Điều hướng đến ProfileScreen */}
+            {/* Avatar */}
             <TouchableOpacity onPress={() => handleNavigateToProfile(comment.user_id)}>
               <Image source={{ uri: comment.avatar_path }} style={styles.commentAvatar} />
             </TouchableOpacity>
             <View style={styles.commentContent}>
-              {/* Username - Điều hướng đến ProfileScreen */}
+              {/* Username */}
               <TouchableOpacity onPress={() => handleNavigateToProfile(comment.user_id)}>
                 <Text style={styles.commentUsername}>{comment.username}</Text>
               </TouchableOpacity>
               <Text>{comment.content}</Text>
 
-              {/* Hiển thị phản hồi cho bình luận nếu có */}
+              {/* Phản hồi bình luận */}
               {(comment.child_comments || []).map((child) => (
                 <View key={`child-comment-${child.comment_id}`} style={styles.childComment}>
-                  {/* Avatar của phản hồi */}
+                  {/* Avatar */}
                   <TouchableOpacity onPress={() => handleNavigateToProfile(child.user_id)}>
                     <Image source={{ uri: child.avatar_path }} style={styles.commentAvatar} />
                   </TouchableOpacity>
                   <View style={styles.commentContent}>
-                    {/* Username của phản hồi */}
+                    {/* Username */}
                     <TouchableOpacity onPress={() => handleNavigateToProfile(child.user_id)}>
                       <Text style={styles.commentUsername}>{child.username}</Text>
                     </TouchableOpacity>
