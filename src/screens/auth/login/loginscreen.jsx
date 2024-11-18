@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Alert, Image } from 'react-native';
 import { loginApi } from '../../../api/authapi';  
+import AsyncStorage from '@react-native-async-storage/async-storage';  // Import AsyncStorage
 import styles from './loginstyle';
 
-const LoginScreen = ({ navigation, setIsLoggedIn, setUserId }) => {  // Thêm setUserId để lưu lại userId sau khi đăng nhập
+const LoginScreen = ({ navigation, setIsLoggedIn, setUserId }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -19,30 +20,34 @@ const LoginScreen = ({ navigation, setIsLoggedIn, setUserId }) => {  // Thêm se
             // Kiểm tra và log lại phản hồi để đảm bảo đúng
             console.log('Phản hồi từ API đăng nhập:', response);
         
-            // Lấy userId từ response
-            const userId = response.userId; // Lấy userId từ phản hồi
+            // Lấy userId và token từ response
+            const { userId, token } = response;  // Lấy userId và token từ phản hồi
         
-            if (!userId) {
-                throw new Error('Không tìm thấy ID người dùng trong phản hồi');
+            if (!userId || !token) {
+                throw new Error('Không tìm thấy ID người dùng hoặc token trong phản hồi');
             }
         
             Alert.alert('Thành công', 'Đăng nhập thành công');
             
-            // Cập nhật trạng thái đăng nhập
+            // Lưu userId và token vào AsyncStorage để duy trì phiên làm việc
+            await AsyncStorage.setItem('userId', userId);
+            await AsyncStorage.setItem('userToken', token);
+        
+            // Cập nhật trạng thái đăng nhập và lưu userId vào state
             setIsLoggedIn(true);
-            setUserId(userId); // Lưu userId để dùng sau này
+            setUserId(userId); // Lưu userId vào state của ứng dụng
         
         } catch (error) {
-          console.log('Lỗi đăng nhập:', error);
+            console.log('Lỗi đăng nhập:', error);
       
-          if (error.response) {
-            console.log('Chi tiết lỗi từ server:', error.response.data);
-            Alert.alert('Lỗi', `Đăng nhập thất bại: ${error.response.data.message || 'Lỗi không xác định từ server'}`);
-          } else {
-            Alert.alert('Lỗi', `Đăng nhập thất bại: ${error.message || 'Không thể kết nối đến server'}`);
-          }
+            if (error.response) {
+                console.log('Chi tiết lỗi từ server:', error.response.data);
+                Alert.alert('Lỗi', `Đăng nhập thất bại: ${error.response.data.message || 'Lỗi không xác định từ server'}`);
+            } else {
+                Alert.alert('Lỗi', `Đăng nhập thất bại: ${error.message || 'Không thể kết nối đến server'}`);
+            }
         }
-    };             
+    };
 
     return (
         <View style={styles.container}>
