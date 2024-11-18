@@ -220,6 +220,12 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
   },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#333',
+  },
   modalInput: {
     width: '100%',
     height: 45,
@@ -244,11 +250,6 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     backgroundColor: '#e74c3c',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   menupostContainer: {
     position: 'absolute',
@@ -277,6 +278,11 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     fontSize: 16,
     color: '#333',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   postItemContainer: {
     marginTop: 20,
@@ -307,43 +313,37 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
-  // Nội dung bài viết
   postContent: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 10,
+    fontSize: 15,
+    color: '#444',
+    marginLeft: 5,
+    marginVertical: 10,
   },
-
-  // Swiper và media
   mediaWrapper: {
-    width: width * 0.9,
-    height: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-    overflow: 'hidden',
-    backgroundColor: '#f0f0f0',
+    marginVertical: 10,
+    width: '100%', 
   },
   postImage: {
-    width: '100%',
-    height: '100%',
+    width: '90%', 
+    height: 300,
+    borderRadius: 10,
     resizeMode: 'cover',
+    alignSelf: 'center', 
   },
   postVideo: {
-    width: '100%',
-    height: '100%',
+    width: '90%', 
+    height: 300,
+    backgroundColor: '#000',
+    borderRadius: 10,
+    alignSelf: 'center', 
   },
-
-  // Các nút tương tác
   postInteractionContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
     marginTop: 10,
-  },
-  interactionText: {
-    fontSize: 14,
-    color: '#333',
-    marginLeft: 5,
   },
   noMediaText: {
     textAlign: 'center',
@@ -363,23 +363,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  confirmDeleteText: {
-    fontSize: 18,
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  cancelButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-  modalBackground: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
+  confirmDeleteContainer: {
     width: width * 0.75,
     backgroundColor: '#fff',
     borderRadius: 15,
@@ -391,44 +375,29 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
   },
-  modalTitle: {
+  confirmDeleteText: {
     fontSize: 18,
-    fontWeight: 'bold',
     color: '#333',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  modalMessage: {
-    fontSize: 16,
-    color: '#555',
     textAlign: 'center',
     marginBottom: 20,
   },
-  modalButtons: {
+  confirmDeleteButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
   },
-  cancelButton: {
-    backgroundColor: '#ddd',
-    borderRadius: 5,
-    paddingVertical: 10,
-    width: '45%',
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#333',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  confirmButton: {
+  confirmDeleteButton: {
     backgroundColor: '#4a90e2',
     borderRadius: 5,
     paddingVertical: 10,
     width: '45%',
     alignItems: 'center',
   },
-  confirmButtonText: {
+  cancelButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  confirmDeleteButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',

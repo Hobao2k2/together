@@ -345,10 +345,10 @@ const ProfileScreen = ({ route, userId, navigation, setIsLoggedIn }) => {
                 <Icon name="camera-alt" size={30} color="#fff" style={styles.wallpaperIcon} />
               </TouchableOpacity>
               <View style={styles.headerContainer}>
-                <TouchableOpacity>
-                  <Icon name="arrow-back" size={28} color="#fff" style={styles.backIcon} />
-                </TouchableOpacity>
-                <Text style={styles.headerText}>My Profile</Text>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Icon name="arrow-back" size={28} color="#fff" style={styles.backIcon} />
+              </TouchableOpacity>
+                <Text style={styles.headerText}>Trang cá nhân</Text>
                 {/* Menu icon */}
                 <TouchableOpacity
                   onPress={() => setMenuProfileVisible(!menuProfileVisible)} // Hiển thị menu khi nhấn vào icon
