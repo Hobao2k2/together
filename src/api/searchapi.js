@@ -26,7 +26,7 @@ export const fetchSearchResults = async (keyword, keyboard) => {
     if (!headers.Authorization) {
       throw new Error('Unauthorized: Token is missing or invalid. Please check your credentials.');
     }
-    const response = await axios.post(BASE_URL, { keyword, keyboard }, { headers: headers });
+    const response = await axios.get(BASE_URL, { keyword, keyboard }, { headers: headers });
     return response.data;
   } catch (error) {
     if (error.response && error.response.status === 401) {
