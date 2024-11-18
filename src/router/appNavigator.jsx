@@ -6,7 +6,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import HomeScreen from '../screens/home/mainhome/homescreen';
 import SearchScreen from '../screens/search/searchscreen';
 import AddPostScreen from '../screens/post/addpost/addpostscreen';
-import ProfileScreen from '../screens/profile/profilescreen';
+import ProfileScreen from '../screens/profile/profile_loggedin/profilescreen';
+import ProfileOtherUserScreen from '../screens/profile/profile_other/profileotheruserscreen';
 import PostDetailScreen from '../screens/post/postdetail/postdetailscreen';
 import EditPostScreen from '../screens/post/editpost/editpostscreen';
 import LoginScreen from '../screens/auth/login/loginscreen';
@@ -21,9 +22,10 @@ const Tab = createBottomTabNavigator();
 function ProfileStackNavigator({ setIsLoggedIn }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="ProfileStack">
+      <Stack.Screen name="Profile">
         {props => <ProfileScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
       </Stack.Screen>
+      <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
       <Stack.Screen name="EditPost" component={EditPostScreen} />
     </Stack.Navigator>
@@ -67,7 +69,7 @@ function MainTabNavigator({ setIsLoggedIn }) {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName;
-          if (route.name === 'Home') {
+          if (route.name === 'HomeScreen') {
             iconName = 'home';
           } else if (route.name === 'Search') {
             iconName = 'search';
@@ -91,7 +93,7 @@ function MainTabNavigator({ setIsLoggedIn }) {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeStackNavigator} />
+      <Tab.Screen name="HomeScreen" component={HomeStackNavigator} />
       <Tab.Screen name="Search" component={SearchScreen} />
       <Tab.Screen
         name="AddPost"
