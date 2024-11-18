@@ -22,17 +22,39 @@ export const getUserCredentials = async () => {
 // API lấy thông tin người dùng
 export const getUserInfoApi = async () => {
   try {
-    const { userId, token } = await getUserCredentials(); 
+    const { userId,token } = await getUserCredentials();  // Lấy thông tin người dùng
 
     const response = await axios.get(`${BASE_URL}/users/${userId}`, {
-      headers: { Authorization: `Bearer ${token}` }, 
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     return response.data;
   } catch (error) {
-    console.error('Lỗi khi lấy thông tin người dùng:', error.response ? error.response.data : error.message);
+    console.error(
+      'Lỗi khi lấy thông tin người dùng:',
+      error.response ? error.response.data : error.message
+    );
     throw new Error('Không thể lấy thông tin người dùng');
   }
+};
+
+// API lấy thông tin người dùng khác
+export const getOtherUserInfoApi = async (userId) => {
+  try {
+    const { token } = await getUserCredentials(); // Chỉ lấy token, không lấy userId
+  
+    const response = await axios.get(`${BASE_URL}/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+  
+    return response.data;
+    } catch (error) {
+    console.error(
+        'Lỗi khi lấy thông tin người dùng:',
+        error.response ? error.response.data : error.message
+    );
+    throw new Error('Không thể lấy thông tin người dùng');
+    }
 };
 
 // API cập nhật thông tin người dùng

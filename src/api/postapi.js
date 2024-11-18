@@ -11,24 +11,6 @@ const createHeadersWithToken = async () => {
   };
 };
 
-// Lấy danh sách bài viết của người dùng
-export const getArticles = async (page, articlesPerPage) => {
-  try {
-    const { userId } = await getUserCredentials();
-    const headers = await createHeadersWithToken();
-
-    const response = await axios.get(
-      `${BASE_URL}/article/${userId}/get-articles/${page}/${articlesPerPage}`,
-      { headers }
-    );
-
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching articles:', error);
-    throw error;
-  }
-};
-
 // Thêm bài viết mới
 export const addArticle = async (content, accessStatus, imageFiles, videoFile) => {
   try {
@@ -140,15 +122,32 @@ export const deleteArticleApi = async (articleId) => {
 export const getUserPostsApi = async (page = 0, pageSize = 10) => {
   try {
     const { userId } = await getUserCredentials();
+    // Trả về dữ liệu từ API (giả sử response.data là mảng bài viết)
     const headers = await createHeadersWithToken();
-
     const response = await axios.get(
       `${BASE_URL}/article/${userId}/get-articles/${page}/${pageSize}`,
       { headers }
     );
-
     return response.data;
   } catch (error) {
+    console.error('Lỗi khi lấy bài viết của người dùng:', error);
+    console.error('Error fetching user posts:', error);
+    throw error;
+  }
+};
+
+// Lấy các bài viết của người dùng khác
+export const getOtherUserPostsApi = async (userId, page = 0, pageSize = 10) => {
+  try {
+    // Trả về dữ liệu từ API (giả sử response.data là mảng bài viết)
+    const headers = await createHeadersWithToken();
+    const response = await axios.get(
+        `${BASE_URL}/article/${userId}/get-articles/${page}/${pageSize}`,
+        { headers }
+    );
+    return response.data;
+    } catch (error) {
+    console.error('Lỗi khi lấy bài viết của người dùng:', error);
     console.error('Error fetching user posts:', error);
     throw error;
   }
