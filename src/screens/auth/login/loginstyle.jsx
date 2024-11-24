@@ -1,11 +1,13 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
+    gradientBackground: {
+        flex: 1,
+    },
     container: {
         flex: 1,
         justifyContent: 'center',
         padding: 20,
-        backgroundColor: '#fff',
     },
     headerlogo: {
         flex: 1,
@@ -21,7 +23,6 @@ const styles = StyleSheet.create({
     },
     input: {
         height: 50,
-        borderColor: '#000',
         borderWidth: 1,
         borderRadius: 10,
         marginVertical: 10,
@@ -32,17 +33,14 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
     },
     forgot: {
-        color: '#888',
         marginVertical: 10,
     },
     button: {
-        backgroundColor: '#4A90E2',
         paddingVertical: 15,
         borderRadius: 10,
         marginVertical: 10,
     },
     buttonText: {
-        color: '#fff',
         textAlign: 'center',
         fontWeight: 'bold',
     },
@@ -52,7 +50,6 @@ const styles = StyleSheet.create({
         marginVertical: 20,
     },
     registerText: {
-        color: '#4A90E2',
     },
 });
 

@@ -8,7 +8,7 @@ import LottieView from 'lottie-react-native';
 import Toast from 'react-native-toast-message';
 import styles from './addpoststyle';
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024; 
 
 const AddPostScreen = () => {
   const [content, setContent] = useState('');

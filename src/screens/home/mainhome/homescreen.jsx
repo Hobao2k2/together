@@ -17,6 +17,7 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 import Swiper from 'react-native-swiper';
 import Video from 'react-native-video';
 import styles from './homestyle';
+import LinearGradient from 'react-native-linear-gradient';
 
 const HomeScreen = () => {
   const [posts, setPosts] = useState([]);
@@ -182,32 +183,34 @@ const HomeScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.headerContainer}>
-        <TouchableOpacity onPress={handleRefresh}>
-          <Text style={styles.logoText}>Together</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleNavigateToMessages}>
-          <MaterialCommunityIcons name="facebook-messenger" size={30} color="#000" />
-        </TouchableOpacity>
-      </View>
+    <LinearGradient colors={['#6fa3fe', '#d4f6ff', '#ffe3e3']} style={{ flex: 1 }}>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.headerContainer}>
+          <TouchableOpacity onPress={handleRefresh}>
+            <Text style={styles.logoText}>Together</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleNavigateToMessages}>
+            <MaterialCommunityIcons name="facebook-messenger" size={30} color="#000" />
+          </TouchableOpacity>
+        </View>
 
-      {/* Danh sách bài viết */}
-      {loading && page === 0 ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : (
-        <FlatList
-          data={posts}
-          renderItem={renderPost}
-          keyExtractor={(item) => item.id.toString()}
-          onEndReached={loadMorePosts}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={loading ? <ActivityIndicator size="small" color="#0000ff" /> : null}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
-        />
-      )}
-    </View>
+        {/* Danh sách bài viết */}
+        {loading && page === 0 ? (
+          <ActivityIndicator size="large" color="#0000ff" />
+        ) : (
+          <FlatList
+            data={posts}
+            renderItem={renderPost}
+            keyExtractor={(item) => item.id.toString()}
+            onEndReached={loadMorePosts}
+            onEndReachedThreshold={0.5}
+            ListFooterComponent={loading ? <ActivityIndicator size="small" color="#0000ff" /> : null}
+            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
+          />
+        )}
+      </View>
+    </LinearGradient>
   );
 };
 

@@ -1,93 +1,120 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, Alert, Image } from 'react-native';
-import { loginApi } from '../../../api/authapi';  
-import AsyncStorage from '@react-native-async-storage/async-storage';  // Import AsyncStorage
+import { View, TextInput, TouchableOpacity, Text, Image, useColorScheme, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import LinearGradient from 'react-native-linear-gradient';
+import Toast from 'react-native-toast-message';
+import { loginApi } from '../../../api/authapi';
 import styles from './loginstyle';
+import { colorStyles } from '../../../styles/colorScheme';
 
 const LoginScreen = ({ navigation, setIsLoggedIn, setUserId }) => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const scheme = useColorScheme();
+  const colors = colorStyles[scheme] || colorStyles.light;
 
-    const handleLogin = async () => {
-        if (!email || !password) {
-            return Alert.alert('Lỗi', 'Vui lòng nhập email và mật khẩu');
-        }
-      
-        try {
-            // Gọi API đăng nhập
-            const response = await loginApi(email, password);
-        
-            // Kiểm tra và log lại phản hồi để đảm bảo đúng
-            console.log('Phản hồi từ API đăng nhập:', response);
-        
-            // Lấy userId và token từ response
-            const { userId, token } = response;  // Lấy userId và token từ phản hồi
-        
-            if (!userId || !token) {
-                throw new Error('Không tìm thấy ID người dùng hoặc token trong phản hồi');
-            }
-        
-            Alert.alert('Thành công', 'Đăng nhập thành công');
-            
-            // Lưu userId và token vào AsyncStorage để duy trì phiên làm việc
-            await AsyncStorage.setItem('userId', userId);
-            await AsyncStorage.setItem('userToken', token);
-        
-            // Cập nhật trạng thái đăng nhập và lưu userId vào state
-            setIsLoggedIn(true);
-            setUserId(userId); // Lưu userId vào state của ứng dụng
-        
-        } catch (error) {
-            console.log('Lỗi đăng nhập:', error);
-      
-            if (error.response) {
-                console.log('Chi tiết lỗi từ server:', error.response.data);
-                Alert.alert('Lỗi', `Đăng nhập thất bại: ${error.response.data.message || 'Lỗi không xác định từ server'}`);
-            } else {
-                Alert.alert('Lỗi', `Đăng nhập thất bại: ${error.message || 'Không thể kết nối đến server'}`);
-            }
-        }
-    };
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Vui lòng nhập email và mật khẩu',
+      });
+      return;
+    }
 
-    return (
-        <View style={styles.container}>
-            <View style={styles.headerlogo}>
-                <Image
-                    source={require('../../../../assets/image/together.png')}
-                    style={styles.logo}
-                />
+    try {
+      const response = await loginApi(email, password);
+      const { userId, token } = response;
+      if (!userId || !token) {
+        throw new Error('Không tìm thấy ID người dùng hoặc token trong phản hồi');
+      }
+
+      await AsyncStorage.setItem('userId', userId);
+      await AsyncStorage.setItem('userToken', token);
+      setIsLoggedIn(true);
+      setUserId(userId);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Thành công',
+        text2: 'Đăng nhập thành công',
+      });
+    } catch (error) {
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: `Đăng nhập thất bại: ${error.response?.data.message || error.message}`,
+      });
+    }
+  };
+
+  return (
+    <LinearGradient colors={['#6fa3fe', '#d4f6ff', '#ffe3e3']} style={styles.gradientBackground}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.container}
+        keyboardVerticalOffset={80} // Điều chỉnh vị trí cho phù hợp với thiết bị
+      >
+        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+          <View style={styles.headerlogo}>
+            <Image
+              source={require('../../../../assets/image/together.png')}
+              style={styles.logo}
+            />
+          </View>
+          <View style={styles.headerlogin}>
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  borderColor: colors.border,
+                  backgroundColor: colors.background,
+                  color: colors.text,
+                },
+              ]}
+              placeholder="Email"
+              placeholderTextColor={colors.text}
+              value={email}
+              onChangeText={setEmail}
+            />
+            <TextInput
+              style={[
+                styles.input,
+                {
+                  borderColor: colors.border,
+                  backgroundColor: colors.background,
+                  color: colors.text,
+                },
+              ]}
+              placeholder="Mật khẩu"
+              placeholderTextColor={colors.text}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+            <View style={styles.row}>
+              <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
+                <Text style={[styles.forgot, { color: colors.text }]}>Quên mật khẩu</Text>
+              </TouchableOpacity>
             </View>
-            <View style={styles.headerlogin}>
-                <TextInput 
-                    style={styles.input}
-                    placeholder="Email" 
-                    value={email} 
-                    onChangeText={setEmail} 
-                />
-                <TextInput 
-                    style={styles.input}
-                    placeholder="Mật khẩu" 
-                    value={password} 
-                    onChangeText={setPassword} 
-                    secureTextEntry 
-                />
-                <View style={styles.row}>
-                    <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-                        <Text style={styles.forgot}>Quên mật khẩu</Text>
-                    </TouchableOpacity>
-                </View>
-                <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                    <Text style={styles.buttonText}>Đăng nhập</Text>
-                </TouchableOpacity>
-                <View style={styles.registerContainer}>
-                    <Text>Nếu bạn chưa có tài khoản hãy</Text>
-                    <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-                        <Text style={styles.registerText}> Đăng ký</Text>
-                    </TouchableOpacity>
-                </View>
+            <TouchableOpacity
+              style={[styles.button, { backgroundColor: colors.buttonBackground }]}
+              onPress={handleLogin}
+            >
+              <Text style={[styles.buttonText, { color: colors.buttonText }]}>Đăng nhập</Text>
+            </TouchableOpacity>
+            <View style={styles.registerContainer}>
+              <Text style={{ color: colors.text }}>Nếu bạn chưa có tài khoản hãy</Text>
+              <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                <Text style={[styles.registerText, { color: colors.linkText }]}> Đăng ký</Text>
+              </TouchableOpacity>
             </View>
-        </View>
-    );
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </LinearGradient>
+  );
 };
-  
+
 export default LoginScreen;

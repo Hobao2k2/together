@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, Image, Alert, ScrollView } fro
 import { launchImageLibrary } from 'react-native-image-picker';
 import Video from 'react-native-video';
 import { editArticleApi } from '../../../api/postapi';
+import Toast from 'react-native-toast-message';
 import styles from './editpoststyle';
 
 const MAX_TOTAL_SIZE_MB = 10; // Giới hạn dung lượng tối đa 10MB
@@ -28,16 +29,22 @@ const EditPostScreen = ({ route, navigation }) => {
     launchImageLibrary({ mediaType: 'photo', selectionLimit: 5 }, (response) => {
       if (!response.didCancel && response.assets) {
         const newImages = response.assets;
-        const newTotalSize = calculateTotalSize() + newImages.reduce((total, file) => total + (file.fileSize || 0), 0) / (1024 * 1024);
-
+        const newTotalSize =
+          calculateTotalSize() +
+          newImages.reduce((total, file) => total + (file.fileSize || 0), 0) / (1024 * 1024);
+  
         if (newTotalSize > MAX_TOTAL_SIZE_MB) {
-          Alert.alert("Lỗi", `Tổng dung lượng ảnh và video không được vượt quá ${MAX_TOTAL_SIZE_MB}MB.`);
+          Toast.show({
+            type: 'error',
+            text1: 'Lỗi',
+            text2: `Tổng dung lượng ảnh và video không được vượt quá ${MAX_TOTAL_SIZE_MB}MB.`,
+          });
         } else {
           setImageFiles([...imageFiles, ...newImages]);
         }
       }
     });
-  };
+  };  
 
   // Hàm chọn video mới
   const selectVideo = () => {
@@ -45,54 +52,93 @@ const EditPostScreen = ({ route, navigation }) => {
       if (!response.didCancel && response.assets) {
         const newVideo = response.assets[0];
         const newTotalSize = calculateTotalSize() + (newVideo.fileSize || 0) / (1024 * 1024);
-
+  
         if (newTotalSize > MAX_TOTAL_SIZE_MB) {
-          Alert.alert("Lỗi", `Tổng dung lượng ảnh và video không được vượt quá ${MAX_TOTAL_SIZE_MB}MB.`);
+          Toast.show({
+            type: 'error',
+            text1: 'Lỗi',
+            text2: `Tổng dung lượng ảnh và video không được vượt quá ${MAX_TOTAL_SIZE_MB}MB.`,
+          });
         } else if (videoFile) {
-          Alert.alert("Lỗi", "Chỉ được thêm một video.");
+          Toast.show({
+            type: 'error',
+            text1: 'Lỗi',
+            text2: 'Chỉ được thêm một video.',
+          });
         } else {
           setVideoFile(newVideo);
         }
       }
     });
-  };
+  };  
 
   // Hàm xóa ảnh
   const removeImage = (index) => {
     const updatedImages = [...imageFiles];
     updatedImages.splice(index, 1);
     setImageFiles(updatedImages);
-  };
+  
+    Toast.show({
+      type: 'info',
+      text1: 'Xóa ảnh',
+      text2: 'Ảnh đã được xóa.',
+    });
+  };  
 
   // Hàm xóa video
   const removeVideo = () => {
     setVideoFile(null);
-  };
+  
+    Toast.show({
+      type: 'info',
+      text1: 'Xóa video',
+      text2: 'Video đã được xóa.',
+    });
+  };  
 
   // Hàm xử lý sửa bài viết
   const handleEditPost = async () => {
     if (!newContent.trim()) {
-      Alert.alert("Lỗi", "Nội dung bài viết không được để trống.");
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Nội dung bài viết không được để trống.',
+      });
       return;
     }
-
+  
     if (calculateTotalSize() > MAX_TOTAL_SIZE_MB) {
-      Alert.alert("Lỗi", `Tổng dung lượng ảnh và video không được vượt quá ${MAX_TOTAL_SIZE_MB}MB.`);
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: `Tổng dung lượng ảnh và video không được vượt quá ${MAX_TOTAL_SIZE_MB}MB.`,
+      });
       return;
     }
-
+  
     setLoading(true);
     try {
       await editArticleApi(userId, articleId, newContent, newAccessStatus, imageFiles, videoFile);
-      Alert.alert("Thành công", "Bài viết đã được cập nhật!");
+  
+      Toast.show({
+        type: 'success',
+        text1: 'Thành công',
+        text2: 'Bài viết đã được cập nhật!',
+      });
+  
       navigation.goBack();
     } catch (error) {
-      console.error("Lỗi khi sửa bài viết:", error);
-      Alert.alert("Lỗi", "Không thể sửa bài viết");
+      console.error('Lỗi khi sửa bài viết:', error);
+  
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Không thể sửa bài viết.',
+      });
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

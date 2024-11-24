@@ -25,20 +25,37 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 
-  // Post Container
+  // // Post Container
+  // postItemContainer: {
+  //   marginTop: 20,
+  //   backgroundColor: '#fff',
+  //   borderRadius: 12,
+  //   marginBottom: 10,
+  //   padding: 12,
+  //   shadowColor: '#000',
+  //   shadowOpacity: 0.1,
+  //   shadowOffset: { width: 0, height: 2 },
+  //   shadowRadius: 4,
+  //   width: width * 0.9,
+  //   alignSelf: 'center',
+  //   elevation: 3,
+  // },
   postItemContainer: {
-    marginTop: 20,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 10,
-    padding: 12,
+    marginVertical: 10, // Khoảng cách giữa các bài viết
+    marginHorizontal: 15, // Khoảng cách hai bên
+    padding: 10, // Khoảng cách bên trong
+    borderRadius: 10, // Bo góc
+    backgroundColor: '#fff', // Màu nền của bài viết
+    // Shadow cho iOS
     shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
-    width: width * 0.9,
-    alignSelf: 'center',
-    elevation: 3,
+    shadowRadius: 5,
+    // Shadow cho Android
+    elevation: 5,
   },
 
   // Post Header
@@ -81,6 +98,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+    borderRadius: 10,
   },
   postVideo: {
     width: '100%',
@@ -96,6 +114,7 @@ const styles = StyleSheet.create({
   interactionButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: 'C4E1F6',
   },
   interactionText: {
     fontSize: 14,
