@@ -19,6 +19,7 @@ import ResetPasswordScreen from '../screens/auth/forgotpassword/resetpasswordscr
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+// Stack Navigator cho Profile
 function ProfileStackNavigator({ setIsLoggedIn }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -32,44 +33,60 @@ function ProfileStackNavigator({ setIsLoggedIn }) {
   );
 }
 
+// Stack Navigator cho Home
 function HomeStackNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="HomeStack" component={HomeScreen} />
+      <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+      <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
     </Stack.Navigator>
   );
 }
 
+// Stack Navigator cho Search
+function SearchStackNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Search" component={SearchScreen} />
+      <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// Custom Add Post Button
 const AddPostButton = forwardRef(({ color }, ref) => (
   <Icon
     name="add"
-    size={50}
+    size={60} // Kích thước biểu tượng
     color={color}
     style={{
       position: 'absolute',
-      bottom: 6,
-      alignSelf: 'center',
-      backgroundColor: '#ffffff',
-      borderRadius: 36,
       padding: 6,
-      elevation: 6,
-      shadowColor: '#000',
+      bottom: 6, // Điều chỉnh khoảng cách so với tab bar
+      alignSelf: 'center', // Căn giữa theo chiều ngang
+      backgroundColor: '#ffffff', // Màu nền của nút
+      width: 72, // Kích thước vuông
+      height: 72,
+      borderRadius: 36, // Hình tròn
+      elevation: 6, // Đổ bóng trên Android
+      shadowColor: '#000', // Đổ bóng trên iOS
       shadowOffset: { width: 0, height: 5 },
-      shadowOpacity: 0.4,
+      shadowOpacity: 0.5,
       shadowRadius: 8,
     }}
     ref={ref}
   />
 ));
 
+// Tab Navigator chính
 function MainTabNavigator({ setIsLoggedIn }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ color, size }) => {
           let iconName;
-          if (route.name === 'HomeScreen') {
+          if (route.name === 'Home') {
             iconName = 'home';
           } else if (route.name === 'Search') {
             iconName = 'search';
@@ -85,16 +102,16 @@ function MainTabNavigator({ setIsLoggedIn }) {
         tabBarStyle: {
           height: 60,
           paddingTop: 10,
-          paddingBottom: 8,
-          borderTopWidth: 3,
+          paddingBottom: 6,
+          borderTopWidth: 2,
           borderTopColor: '#e0e0e0',
         },
         tabBarLabelStyle: { fontSize: 10 },
         headerShown: false,
       })}
     >
-      <Tab.Screen name="HomeScreen" component={HomeStackNavigator} />
-      <Tab.Screen name="Search" component={SearchScreen} />
+      <Tab.Screen name="Home" component={HomeStackNavigator} />
+      <Tab.Screen name="Search" component={SearchStackNavigator} />
       <Tab.Screen
         name="AddPost"
         component={AddPostScreen}
@@ -110,6 +127,7 @@ function MainTabNavigator({ setIsLoggedIn }) {
   );
 }
 
+// Stack Navigator cho Authentication
 function AuthStackNavigator({ setIsLoggedIn, setUserId }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -130,6 +148,7 @@ function AuthStackNavigator({ setIsLoggedIn, setUserId }) {
   );
 }
 
+// App Navigator chính
 function AppNavigator() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userId, setUserId] = useState(null);
