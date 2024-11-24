@@ -3,13 +3,13 @@ import { getUserCredentials } from './profileapi';
 
 const BASE_URL = 'http://14.225.254.35:8080/api/users/search-people';
 
-// Hàm tiện ích để tạo header với token
 const createHeadersWithToken = async () => {
   try {
-    const { token } = await getUserCredentials(); // Lấy token người dùng
+    const { token } = await getUserCredentials();
     if (!token) {
       throw new Error('Token is missing. Please log in again.');
     }
+    console.log('Token retrieved successfully:', token); // Log kiểm tra token
     return {
       Authorization: `Bearer ${token}`,
     };
@@ -19,22 +19,26 @@ const createHeadersWithToken = async () => {
   }
 };
 
-// Function to call search API
 export const fetchSearchResults = async (keyword, keyboard) => {
   try {
     const headers = await createHeadersWithToken();
     if (!headers.Authorization) {
       throw new Error('Unauthorized: Token is missing or invalid. Please check your credentials.');
     }
-    const response = await axios.get(BASE_URL, { keyword, keyboard }, { headers: headers });
+
+    // Tạo URL endpoint động
+    const url = `${BASE_URL}/${encodeURIComponent(keyword)}/${keyboard}`;
+    console.log('Calling API URL:', url); // Log URL để kiểm tra
+
+    // Gửi request tới API
+    const response = await axios.get(url, {
+      headers: headers,
+    });
+
+    console.log('API response received:', response.data); // Log phản hồi từ API
     return response.data;
   } catch (error) {
-    if (error.response && error.response.status === 401) {
-      console.error('Unauthorized request. Please check your credentials.');
-      Alert.alert('Authentication Error', 'Your session has expired. Please log in again.');
-    } else {
-      console.error('Error fetching search results:', error);
-    }
+    console.error('Error fetching search results:', error); // Log lỗi khi xảy ra
     throw error;
   }
 };
