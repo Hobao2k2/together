@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { View, Text, Image, TouchableOpacity, ActivityIndicator, Modal, FlatList, Alert, TextInput } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ActivityIndicator, Modal, FlatList, TextInput } from 'react-native';
 import { launchImageLibrary } from 'react-native-image-picker';
 import LinearGradient from 'react-native-linear-gradient';
 import { getUserInfoApi, updateProfileApi, uploadImageApi } from '../../../api/profileapi';
@@ -10,6 +10,7 @@ import Swiper from 'react-native-swiper';
 import Video from 'react-native-video';
 import styles from './profilestyle';
 import { Dimensions } from 'react-native';
+import Toast from 'react-native-toast-message';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
@@ -32,22 +33,6 @@ const ProfileScreen = ({ route, userId, navigation, setIsLoggedIn }) => {
   const [playingVideoId, setPlayingVideoId] = useState(null);
   const [menuPostVisible, setMenuPostVisible] = useState(false); 
   const [activeMenuPostId, setActiveMenuPostId] = useState(null);
-
-  // Hàm xử lý đăng xuất
-  const handleLogout = async () => {
-    try {
-      // Xóa token khỏi AsyncStorage
-      await AsyncStorage.removeItem('userToken');
-  
-      // Cập nhật trạng thái đăng nhập
-      setIsLoggedIn(false);
-  
-      Alert.alert('Đăng xuất', 'Bạn đã đăng xuất thành công!');
-    } catch (error) {
-      console.error('Lỗi khi đăng xuất:', error);
-      Alert.alert('Lỗi', 'Không thể đăng xuất. Vui lòng thử lại.');
-    }
-  };
 
   const [profile, setProfile] = useState({
     username: '',
@@ -83,51 +68,6 @@ const ProfileScreen = ({ route, userId, navigation, setIsLoggedIn }) => {
     }
   };
 
-  const handleUploadImage = async (imageType) => {
-    const options = {
-      mediaType: 'photo',
-    };
-
-    launchImageLibrary(options, async (response) => {
-      if (response.assets && response.assets.length > 0) {
-        const selectedImage = response.assets[0];
-        setPhoto(selectedImage);
-
-        try {
-          await uploadImageApi(selectedImage, imageType);
-          Alert.alert('Thành công', 'Ảnh đã được upload thành công!');
-          fetchProfile(); 
-        } catch (error) {
-          const errorMessage = error.response ? error.response.data : error.message;
-          Alert.alert('Lỗi', `Upload ảnh thất bại! Lỗi: ${errorMessage}`);
-          console.error('Upload failed:', error);
-        }
-      } else {
-        Alert.alert('Thông báo', 'Bạn chưa chọn ảnh nào.');
-      }
-    });
-  };
-
-  const handleUpdateProfile = async () => {
-    try {
-      const updatedProfileData = {
-        username: editableProfile.username,
-        phone: editableProfile.phone,
-        gender: editableProfile.gender,
-        bios: editableProfile.bios,
-        dob: editableProfile.dob,
-      };
-
-      await updateProfileApi(updatedProfileData);
-      Alert.alert('Thành công', 'Thông tin cá nhân đã được cập nhật');
-      fetchProfile();
-      setModalVisible(false);
-    } catch (error) {
-      console.error('Lỗi khi cập nhật thông tin cá nhân:', error);
-      Alert.alert('Lỗi', 'Không thể cập nhật thông tin cá nhân');
-    }
-  };
-
   const fetchUserPosts = async () => {
     try {
       const response = await getUserPostsApi(page, pageSize);
@@ -153,56 +93,166 @@ const ProfileScreen = ({ route, userId, navigation, setIsLoggedIn }) => {
     }
   };  
 
+  const handleLogout = async () => {
+    try {
+      // Xóa token khỏi AsyncStorage
+      await AsyncStorage.removeItem('userToken');
+  
+      // Cập nhật trạng thái đăng nhập
+      setIsLoggedIn(false);
+  
+      // Thông báo thành công
+      Toast.show({
+        type: 'success',
+        text1: 'Đăng xuất',
+        text2: 'Bạn đã đăng xuất thành công!',
+      });
+    } catch (error) {
+      console.error('Lỗi khi đăng xuất:', error);
+  
+      // Thông báo lỗi
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Không thể đăng xuất. Vui lòng thử lại.',
+      });
+    }
+  };  
+
+  const handleUploadImage = async (imageType) => {
+    const options = {
+      mediaType: 'photo',
+    };
+  
+    launchImageLibrary(options, async (response) => {
+      if (response.assets && response.assets.length > 0) {
+        const selectedImage = response.assets[0];
+        setPhoto(selectedImage);
+  
+        try {
+          await uploadImageApi(selectedImage, imageType);
+  
+          // Thông báo thành công
+          Toast.show({
+            type: 'success',
+            text1: 'Thành công',
+            text2: 'Ảnh đã được upload thành công!',
+          });
+          fetchProfile();
+        } catch (error) {
+          const errorMessage = error.response ? error.response.data : error.message;
+          console.error('Upload failed:', error);
+  
+          // Thông báo lỗi
+          Toast.show({
+            type: 'error',
+            text1: 'Lỗi',
+            text2: `Upload ảnh thất bại! Lỗi: ${errorMessage}`,
+          });
+        }
+      } else {
+        // Thông báo chưa chọn ảnh
+        Toast.show({
+          type: 'info',
+          text1: 'Thông báo',
+          text2: 'Bạn chưa chọn ảnh nào.',
+        });
+      }
+    });
+  };  
+
+  const handleUpdateProfile = async () => {
+    try {
+      const updatedProfileData = {
+        username: editableProfile.username,
+        phone: editableProfile.phone,
+        gender: editableProfile.gender,
+        bios: editableProfile.bios,
+        dob: editableProfile.dob,
+      };
+  
+      await updateProfileApi(updatedProfileData);
+  
+      // Thông báo thành công
+      Toast.show({
+        type: 'success',
+        text1: 'Thành công',
+        text2: 'Thông tin cá nhân đã được cập nhật!',
+      });
+  
+      fetchProfile();
+      setModalVisible(false);
+    } catch (error) {
+      console.error('Lỗi khi cập nhật thông tin cá nhân:', error);
+  
+      // Thông báo lỗi
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Không thể cập nhật thông tin cá nhân.',
+      });
+    }
+  };  
+
   const handlePostPress = async (articleId, ownerId) => {
     try {
       const articleDetail = await fetchPostDetail(articleId, ownerId);
       if (articleDetail.success) {
         navigation.navigate('PostDetail', { postDetail: articleDetail.data });
       } else {
-        Alert.alert('Lỗi', articleDetail.error);
+        // Thông báo lỗi từ API
+        Toast.show({
+          type: 'error',
+          text1: 'Lỗi',
+          text2: articleDetail.error,
+        });
       }
     } catch (error) {
       console.error('Lỗi khi lấy chi tiết bài viết:', error);
-      Alert.alert('Lỗi', 'Không thể lấy chi tiết bài viết');
-    }
-  };
   
-  useFocusEffect(
-    useCallback(() => {
-      fetchProfile();
-      fetchUserPosts();
-    }, [userIdFromRoute, page])
-  );
+      // Thông báo lỗi
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Không thể lấy chi tiết bài viết.',
+      });
+    }
+  };  
 
-  // Hàm xóa bài viết
   const handleDeletePost = async (postId) => {
     try {
       // Gọi API xóa bài viết
       await deleteArticleApi(postId);
-
+  
       // Thông báo thành công
-      Alert.alert("Thành công", "Bài viết đã được xóa!");
-
+      Toast.show({
+        type: 'success',
+        text1: 'Thành công',
+        text2: 'Bài viết đã được xóa!',
+      });
+  
       // Cập nhật danh sách bài viết
       setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
     } catch (error) {
-      console.error("Lỗi khi xóa bài viết:", error);
-
+      console.error('Lỗi khi xóa bài viết:', error);
+  
       // Thông báo lỗi
-      Alert.alert("Lỗi", "Không thể xóa bài viết");
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Không thể xóa bài viết.',
+      });
     } finally {
       // Đóng menu trong mọi trường hợp
       setMenuPostVisible(false);
-
+  
       // Đóng modal xác nhận (nếu có)
       setConfirmDeleteVisible(false);
     }
-  };
+  };  
 
-
-  // Hàm sửa bài viết
   const handleEditPost = (postId, navigation) => {
-    const postToEdit = posts.find((post) => post.id === postId); 
+    const postToEdit = posts.find((post) => post.id === postId);
   
     if (postToEdit) {
       navigation.navigate('EditPost', {
@@ -214,10 +264,21 @@ const ProfileScreen = ({ route, userId, navigation, setIsLoggedIn }) => {
         video: postToEdit.video_article ? { uri: postToEdit.video_article } : null,
       });
     } else {
-      Alert.alert("Lỗi", "Không thể tìm thấy thông tin bài viết.");
+      // Thông báo lỗi khi không tìm thấy bài viết
+      Toast.show({
+        type: 'error',
+        text1: 'Lỗi',
+        text2: 'Không thể tìm thấy thông tin bài viết.',
+      });
     }
-  };
-  
+  };  
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchProfile();
+      fetchUserPosts();
+    }, [userIdFromRoute, page])
+  );
 
   // Hàm render bài viết
   const renderPostItem = ({ item }) => {
@@ -483,24 +544,24 @@ const ProfileScreen = ({ route, userId, navigation, setIsLoggedIn }) => {
         visible={logoutModalVisible}
         onRequestClose={() => setLogoutModalVisible(false)}
       >
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Xác nhận đăng xuất</Text>
-            <Text style={styles.modalMessage}>
+        <View style={styles.logoutModalBackground}>
+          <View style={styles.logoutModalContainer}>
+            <Text style={styles.logoutModalTitle}>Xác nhận đăng xuất</Text>
+            <Text style={styles.logoutModalMessage}>
               Bạn có chắc chắn muốn đăng xuất không?
             </Text>
-            <View style={styles.modalButtons}>
+            <View style={styles.logoutModalButtons}>
               <TouchableOpacity
-                style={styles.cancelButton}
+                style={styles.logoutCancelButton}
                 onPress={() => setLogoutModalVisible(false)}
               >
-                <Text style={styles.cancelButtonText}>Hủy</Text>
+                <Text style={styles.logoutCancelButtonText}>Hủy</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.confirmButton}
+                style={styles.logoutConfirmButton}
                 onPress={handleLogout}
               >
-                <Text style={styles.confirmButtonText}>Đăng xuất</Text>
+                <Text style={styles.logoutConfirmButtonText}>Đăng xuất</Text>
               </TouchableOpacity>
             </View>
           </View>
