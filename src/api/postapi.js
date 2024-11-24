@@ -85,7 +85,7 @@ export const editArticleApi = async (userId, articleId, content, accessStatus, i
       });
     }
 
-    const response = await axios.post(
+    const response = await axios.put(
       `${BASE_URL}/article/${userId}/edit-article/${articleId}`,
       formData,
       { headers }
