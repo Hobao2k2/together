@@ -1,34 +1,40 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { View, Text, Image, TouchableOpacity, ActivityIndicator, FlatList, Alert, RefreshControl } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ActivityIndicator, FlatList } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { getOtherUserInfoApi } from '../../../api/profileapi';
 import { fetchPostDetail, getOtherUserPostsApi } from '../../../api/postapi';
-import { getUserCredentials } from '../../../api/profileapi';
 import { checkRelationshipApi, sendFriendRequestApi, acceptFriendRequestApi, rejectFriendRequestApi, blockUserApi, unfriendUserApi } from '../../../api/friendapi'; 
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Swiper from 'react-native-swiper';
+import Toast from 'react-native-toast-message';
 import Video from 'react-native-video';
 import styles from './profileotheruserstyle';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Dimensions } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
-const ProfileOtherUserScreen = ({ route, navigation }) => {
+const ProfileOtherUserScreen = ({ route, navigation}) => {
   const userIdFromRoute = route?.params?.userId;
+  console.log('Route params:', route.params);
 
   const [posts, setPosts] = useState([]);
+  const [hasMorePosts, setHasMorePosts] = useState(true); 
   const [postsLoading, setPostsLoading] = useState(true);
   const [page, setPage] = useState(0);  
   const [pageSize] = useState(10);  
-  const [loading, setLoading] = useState(false);
+  const [photo, setPhoto] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [playingVideoId, setPlayingVideoId] = useState(null);
+  const [menuPostVisible, setMenuPostVisible] = useState(false); 
+  const [activeMenuPostId, setActiveMenuPostId] = useState(null);
   const [relationshipStatus, setRelationshipStatus] = useState(null); 
   const [loadingRelationship, setLoadingRelationship] = useState(false);
-  const [menuFriendVisible, setMenuFriendVisible] = useState(false); 
-  const [menuBlockVisible, setMenuBlockVisible] = useState(false); 
-  const [refreshing, setRefreshing] = useState(false);
+  const [menuFriendVisible, setMenuFriendVisible] = useState(false); // Hiển thị menu bạn bè
+  const [menuBlockVisible, setMenuBlockVisible] = useState(false); // Hiển thị menu block
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [isInitializing, setIsInitializing] = useState(true); // Thêm cờ khởi tạo
 
   const [profile, setProfile] = useState({
     username: '',
@@ -39,12 +45,18 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
 
   // Fetch thông tin người dùng
   const fetchProfile = async () => {
+
+    if (!currentUserId || !userIdFromRoute) {
+      console.warn('fetchProfile: currentUserId hoặc userIdFromRoute không hợp lệ.');
+      return;
+    }
+
     try {
       const response = await getOtherUserInfoApi(userIdFromRoute);
       const userInfo = response.result;
-      console.log(userInfo);
+  
       setProfile({
-        username: userInfo.username,
+        username: userInfo.username || 'Không có tên',
         bios: userInfo.bios || '',
         avatar_path: userInfo.avatar_path || '',
         wallpaper_path: userInfo.wallpaper_path || '',
@@ -54,73 +66,107 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
       });
     } catch (error) {
       console.error('Lỗi khi lấy thông tin người dùng:', error);
-    } finally {
-      setLoading(false);
+      setProfile({
+        username: 'Không xác định',
+        bios: '',
+        avatar_path: '',
+        wallpaper_path: '',
+      });
     }
-  };
+  };  
 
   // Fetch bài viết của người dùng
   const fetchUserPosts = async () => {
+
+    if (!currentUserId || !userIdFromRoute) {
+      console.warn('fetchUserPosts: currentUserId hoặc userIdFromRoute không hợp lệ.');
+      return;
+    }
+
     try {
+      if (page === 0) {
+        setPosts([]); // Xóa bài viết cũ nếu là lần tải đầu tiên
+      }
+  
       const response = await getOtherUserPostsApi(userIdFromRoute, page, pageSize);
       const postsData = response.result;
   
       if (Array.isArray(postsData)) {
         setPosts((prevPosts) => {
-          // Lọc các bài viết trùng lặp
           const uniquePosts = [...prevPosts, ...postsData].reduce((acc, current) => {
-            // Kiểm tra xem bài viết có trùng với bài viết đã có trong acc không
             const exists = acc.find(item => item.id === current.id);
-            if (!exists) acc.push(current);  // Nếu chưa có thì thêm vào
+            if (!exists) acc.push(current);
             return acc;
           }, []);
-          
+  
           return uniquePosts;
         });
+  
+        if (postsData.length < pageSize) {
+          setHasMorePosts(false); // Không còn bài viết mới
+        }
       }
     } catch (error) {
       console.error('Lỗi khi lấy bài viết:', error);
     } finally {
       setPostsLoading(false);
     }
-  };
+  };  
 
-  // Kiểm tra quan hệ giữa 2 tài khoản
   const fetchRelationshipStatus = async () => {
 
-    if (!currentUserId) return;
-
+    if (!currentUserId || !userIdFromRoute) {
+      console.warn('fetchRelationshipStatus: currentUserId hoặc userIdFromRoute không hợp lệ.');
+      return;
+    }
+  
     try {
-      setLoadingRelationship(true);
       const response = await checkRelationshipApi(currentUserId, userIdFromRoute);
-      const { result } = response;
-
+      const result = response?.result;
+      console.log('Kết quả mối quan hệ từ API:', result); // Log giá trị trả về từ API
+  
       switch (result) {
         case 'FRIEND':
           setRelationshipStatus('friends');
           break;
         case 'REQUEST':
-          setRelationshipStatus('pending'); // Người dùng đã gửi yêu cầu kết bạn
+          setRelationshipStatus('pending');
           break;
         case 'REQUESTED':
-          setRelationshipStatus('requested'); // Người dùng nhận được yêu cầu kết bạn
+          setRelationshipStatus('requested');
           break;
         case 'BLOCK':
-          setRelationshipStatus('blocked_by_sender'); // Người dùng đã block tài khoản này
+          setRelationshipStatus('blocked_by_sender');
           break;
         case 'BLOCKED':
-          setRelationshipStatus('blocked'); // Người dùng bị block bởi tài khoản này
+          setRelationshipStatus('blocked');
           break;
-        default:
-          setRelationshipStatus('not_friends'); // Không có quan hệ
+        case 'NONE':
+          setRelationshipStatus('none');
+          break;
       }
+  
+      console.log('Trạng thái relationshipStatus sau set:', relationshipStatus);
     } catch (error) {
-      console.error('Lỗi khi kiểm tra quan hệ:', error);
-      setRelationshipStatus(null); // Trường hợp lỗi
-    } finally {
-      setLoadingRelationship(false);
+      console.error('Lỗi khi kiểm tra mối quan hệ:', error);
+      setRelationshipStatus(null);
     }
-  };  
+  };   
+
+  // Hàm lấy currentUserId từ AsyncStorage
+  const fetchCurrentUserId = async () => {
+    try {
+      const userId = await AsyncStorage.getItem('userId');
+      if (!userId) {
+        throw new Error('Không tìm thấy userId trong bộ nhớ cục bộ.');
+      }
+      console.log('Lấy userId từ AsyncStorage:', userId);
+      setCurrentUserId(userId);
+    } catch (error) {
+      console.error('Lỗi khi lấy userId từ AsyncStorage:', error);
+      setCurrentUserId(null);
+    }
+  };
 
   // Gửi yêu cầu kết bạn
   const handleAddFriend = async () => {
@@ -129,10 +175,20 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
       setLoadingRelationship(true);
       await sendFriendRequestApi(currentUserId, userIdFromRoute); // API gửi yêu cầu kết bạn
       setRelationshipStatus('pending'); // Cập nhật trạng thái thành "đang chờ"
-      Alert.alert('Thành công', 'Yêu cầu kết bạn đã được gửi.');
+      Toast.show({
+        type: 'success',
+        position: 'bottom',
+        text1: 'Thành công',
+        text2: 'Yêu cầu kết bạn đã được gửi.',
+      });
     } catch (error) {
       console.error('Lỗi khi gửi yêu cầu kết bạn:', error);
-      Alert.alert('Lỗi', 'Không thể gửi yêu cầu kết bạn.');
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Lỗi',
+        text2: 'Không thể gửi yêu cầu kết bạn.',
+      });
     } finally {
       setLoadingRelationship(false);
     }
@@ -144,10 +200,20 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
     try {
       await acceptFriendRequestApi(currentUserId, userIdFromRoute); // API chấp nhận kết bạn
       setRelationshipStatus('friends'); // Cập nhật trạng thái thành bạn bè
-      Alert.alert('Thành công', 'Bạn đã chấp nhận lời mời kết bạn.');
+      Toast.show({
+        type: 'success',
+        position: 'bottom',
+        text1: 'Thành công',
+        text2: 'Bạn đã chấp nhận lời mời kết bạn.',
+      });
     } catch (error) {
       console.error('Lỗi khi chấp nhận kết bạn:', error);
-      Alert.alert('Lỗi', 'Không thể chấp nhận lời mời kết bạn.');
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Lỗi',
+        text2: 'Không thể chấp nhận lời mời kết bạn.',
+      });
     }
   };
 
@@ -157,10 +223,20 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
     try {
       await rejectFriendRequestApi(currentUserId, userIdFromRoute); // API từ chối kết bạn
       setRelationshipStatus('not_friends'); // Cập nhật trạng thái thành không bạn bè
-      Alert.alert('Thành công', 'Bạn đã từ chối lời mời kết bạn.');
+      Toast.show({
+        type: 'success',
+        position: 'bottom',
+        text1: 'Thành công',
+        text2: 'Bạn đã từ chối lời mời kết bạn.',
+      });
     } catch (error) {
       console.error('Lỗi khi từ chối kết bạn:', error);
-      Alert.alert('Lỗi', 'Không thể từ chối lời mời kết bạn.');
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Lỗi',
+        text2: 'Không thể từ chối lời mời kết bạn.',
+      });
     }
   };
 
@@ -170,10 +246,20 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
     try {
       await unfriendUserApi(currentUserId, userIdFromRoute); // API hủy kết bạn
       setRelationshipStatus('not_friends'); // Cập nhật trạng thái thành không bạn bè
-      Alert.alert('Thành công', 'Bạn đã hủy kết bạn.');
+      Toast.show({
+        type: 'success',
+        position: 'bottom',
+        text1: 'Thành công',
+        text2: 'Bạn đã hủy kết bạn.',
+      });
     } catch (error) {
       console.error('Lỗi khi hủy kết bạn:', error);
-      Alert.alert('Lỗi', 'Không thể hủy kết bạn.');
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Lỗi',
+        text2: 'Không thể hủy kết bạn.',
+      });
     }
   };
 
@@ -183,12 +269,22 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
     try {
       await blockUserApi(currentUserId, userIdFromRoute); // API block tài khoản
       setRelationshipStatus('blocked_by_sender'); // Cập nhật trạng thái thành "đã block"
-      Alert.alert('Thành công', 'Tài khoản đã bị chặn.');
+      Toast.show({
+        type: 'success',
+        position: 'bottom',
+        text1: 'Thành công',
+        text2: 'Tài khoản đã bị chặn.',
+      });
     } catch (error) {
       console.error('Lỗi khi chặn tài khoản:', error);
-      Alert.alert('Lỗi', 'Không thể chặn tài khoản.');
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Lỗi',
+        text2: 'Không thể chặn tài khoản.',
+      });
     }
-  };  
+  };
 
   const handlePostPress = async (articleId, ownerId) => {
     try {
@@ -196,36 +292,62 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
       if (articleDetail.success) {
         navigation.navigate('PostDetail', { postDetail: articleDetail.data });
       } else {
-        Alert.alert('Lỗi', articleDetail.error);
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: 'Lỗi',
+          text2: articleDetail.error,
+        });
       }
     } catch (error) {
       console.error('Lỗi khi lấy chi tiết bài viết:', error);
-      Alert.alert('Lỗi', 'Không thể lấy chi tiết bài viết');
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Lỗi',
+        text2: 'Không thể lấy chi tiết bài viết',
+      });
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      setLoading(true);
-      fetchProfile();
-      fetchUserPosts();
-      fetchRelationshipStatus();
-      setLoading(false);
-    }, [userIdFromRoute, page])
-  );
+  const initializeData = useCallback(async () => {
+    console.log('Initializing...');
+    setLoading(true);
 
+    try {
+      await fetchCurrentUserId(); // Lấy currentUserId
+
+      if (!currentUserId || !userIdFromRoute) {
+        console.warn('currentUserId hoặc userIdFromRoute không hợp lệ.');
+        return;
+      }
+
+      await Promise.all([fetchProfile(), fetchUserPosts(), fetchRelationshipStatus()]);
+    } catch (error) {
+      console.error('Lỗi khi tải dữ liệu:', error);
+    } finally {
+      console.log('Kết thúc tải dữ liệu.');
+      setLoading(false);
+    }
+  }, [currentUserId, userIdFromRoute]);
+
+  // Chỉ chạy khi lần đầu load màn hình hoặc userIdFromRoute thay đổi
+  useEffect(() => {
+    if (userIdFromRoute) {
+      initializeData();
+    }
+  }, [userIdFromRoute, initializeData]);
+
+  // Làm mới khi màn hình được focus
   useFocusEffect(
     useCallback(() => {
-      const fetchCurrentUserId = async () => {
-        try {
-          const { userId } = await getUserCredentials();
-          setCurrentUserId(userId);
-        } catch (error) {
-          console.error('Lỗi khi lấy userId:', error);
-        }
-      };
-      fetchCurrentUserId();
-    }, [])
+      if (currentUserId && userIdFromRoute) {
+        console.log('Refreshing data...');
+        initializeData(); // Tận dụng lại logic
+      } else {
+        console.warn('Dữ liệu không đủ để làm mới.');
+      }
+    }, [currentUserId, userIdFromRoute, initializeData])
   );
 
   // Hàm render bài viết
@@ -250,6 +372,12 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
           <View style={styles.postHeader}>
             <Image source={item.user_avatar ? { uri: item.user_avatar } : require('../../../../assets/image/avatar_icon.png')} style={styles.avatarSmall} />
             <Text style={styles.usernamePost}>{item.username}</Text>
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => setActiveMenuPostId(activeMenuPostId === item.id ? null : item.id)}
+            >
+              <Icon name="more-vert" size={24} color="#333" />
+            </TouchableOpacity>
           </View>
 
           {/* Nội dung bài viết */}
@@ -295,14 +423,15 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
     );
   };
 
+  const filteredPosts = useMemo(() => {
+    if (relationshipStatus === 'friends') {
+      return posts.filter((post) => post.access_status === 'FRIEND');
+    }
+    return [];
+  }, [relationshipStatus, posts]);  
+
   // Hàm render phần profile cá nhân
   const renderProfileActions = () => {
-  
-    if (loadingRelationship) {
-      // Đang tải trạng thái quan hệ
-      return <ActivityIndicator size="small" color="#000" />;
-    }
-  
     switch (relationshipStatus) {
       case 'friends': // Đã là bạn bè
         return (
@@ -315,7 +444,10 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
                 <Icon name="check-circle" size={24} color="#00A2FF" />
                 <Text style={styles.friendText}>Bạn bè</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.messageButton} onPress={() => navigation.navigate('Chat', { userId: userIdFromRoute })}>
+              <TouchableOpacity
+                style={styles.messageButton}
+                onPress={() => navigation.navigate('ChatUser', { userId: userIdFromRoute })}
+              >
                 <Text style={styles.messageButtonText}>Nhắn tin</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -357,23 +489,20 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
                 </TouchableOpacity>
               </View>
             )}
-  
-            {/* Danh sách bài viết */}
-            <FlatList
-              data={posts.filter(post => post.access_status === 'FRIENDS')}
-              renderItem={renderPostItem}
-              keyExtractor={(item) => item.id.toString()}
-              onEndReached={() => fetchUserPosts()}
-              onEndReachedThreshold={0.5}
-            />
           </>
         );
-  
-      case 'not_friends': // Không phải bạn bè
+
+      case 'none': // Không có quan hệ
         return (
           <View style={styles.actionContainer}>
             <TouchableOpacity style={styles.addFriendButton} onPress={handleAddFriend}>
               <Text style={styles.addFriendButtonText}>Thêm bạn bè</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={styles.messageButton}
+                onPress={() => navigation.navigate('ChatUser', { userId: userIdFromRoute })}
+              >
+                <Text style={styles.messageButtonText}>Nhắn tin</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.moreOptionsButton}
@@ -407,6 +536,12 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
               <Text style={styles.confirmFriendButtonText}>Chấp nhận</Text>
             </TouchableOpacity>
             <TouchableOpacity
+                style={styles.messageButton}
+                onPress={() => navigation.navigate('ChatUser', { userId: userIdFromRoute })}
+              >
+                <Text style={styles.messageButtonText}>Nhắn tin</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               style={styles.rejectFriendButton}
               onLongPress={() => setMenuFriendVisible(true)} // Hiển thị menu "Từ chối" khi bấm giữ
             >
@@ -426,6 +561,12 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
                   <Icon name="close" size={24} color="#e74c3c" />
                   <Text style={styles.menuOptionText}>Từ chối</Text>
                 </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.messageButton}
+                  onPress={() => navigation.navigate('ChatUser', { userId: userIdFromRoute })}
+                >
+                  <Text style={styles.messageButtonText}>Nhắn tin</Text>
+              </TouchableOpacity>
               </View>
             )}
           </View>
@@ -436,6 +577,12 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
           <View style={styles.actionContainer}>
             <TouchableOpacity style={[styles.addFriendButton, styles.pendingButton]} disabled>
               <Text style={styles.addFriendButtonText}>Yêu cầu đang chờ</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+                style={styles.messageButton}
+                onPress={() => navigation.navigate('ChatUser', { userId: userIdFromRoute })}
+              >
+                <Text style={styles.messageButtonText}>Nhắn tin</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.moreOptionsButton}
@@ -468,6 +615,13 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
             <Text style={styles.blockedMessage}>Bạn đã chặn tài khoản này.</Text>
           </View>
         );
+        case 'blocked': // Tài khoản đã block bạn
+        return (
+          <View style={styles.blockedContainer}>
+            <Text style={styles.blockedMessage}>Tài khoản này đã chặn bạn</Text>
+          </View>
+        );
+
   
       default:
         return null;
@@ -478,30 +632,29 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#000" />
-        <Text>Đang tải dữ liệu...</Text>
+        <Text>Đang tải...</Text>
       </View>
     );
-  }
+  }  
 
   return (
     <>
       <FlatList
-        data={posts}
+         data={filteredPosts}
         renderItem={renderPostItem}
         keyExtractor={(item) => item.id || item.uniqueIdentifier}
         onEndReached={() => fetchUserPosts()}
         onEndReachedThreshold={0.5}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => fetchUserPosts(true)} />
-        }
         ListHeaderComponent={
           <>
             {/* Phần ảnh bìa và avatar */}
             <LinearGradient colors={['#6a11cb', '#2575fc']} style={styles.wallpaperContainer}>
-                <Image
-                  source={profile.wallpaper_path ? { uri: profile.wallpaper_path } : require('../../../../assets/image/wallpaper.png')}
-                  style={styles.wallpaper}
-                />
+              {/* Ảnh bìa */}
+              <Image
+                source={profile.wallpaper_path ? { uri: profile.wallpaper_path } : require('../../../../assets/image/wallpaper.png')}
+                style={styles.wallpaper}
+              />
+              
               {/* Thanh điều hướng */}
               <View style={styles.headerContainer}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -512,10 +665,12 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
   
               {/* Avatar */}
               <View style={styles.avatarWrapper}>
+                <View style={styles.avatarContainer}>
                   <Image
                     source={profile.avatar_path ? { uri: profile.avatar_path } : require('../../../../assets/image/avatar_icon.png')}
                     style={styles.avatar}
                   />
+                </View>
               </View>
             </LinearGradient>
   
@@ -537,7 +692,7 @@ const ProfileOtherUserScreen = ({ route, navigation }) => {
         }
       />
     </>
-  );
+  );  
 };
 
 export default ProfileOtherUserScreen;

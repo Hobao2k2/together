@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, Image } from 'react-native';
 import { Icon } from 'react-native-elements';
 import { addArticle } from '../../../api/postapi';
 import Video from 'react-native-video';

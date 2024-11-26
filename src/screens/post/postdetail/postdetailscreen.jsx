@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Text, Image, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, Image, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity } from 'react-native';
 import Video from 'react-native-video';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import Swiper from 'react-native-swiper';
 import { getUserCredentials } from '../../../api/profileapi';
+import Toast from 'react-native-toast-message';  
 import styles from './postdetailstyle';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
@@ -14,20 +14,137 @@ const PostDetailScreen = ({ route }) => {
   const navigation = useNavigation();
   const { postDetail } = route.params;
 
+  const [likes, setLikes] = useState(postDetail.number_reaction);
+  const [comments, setComments] = useState(postDetail.comments || []);
+  const [newComment, setNewComment] = useState('');
+  const [isLiked, setIsLiked] = useState(false); // Kiểm tra bài viết đã được like hay chưa
+
+  // Hàm xử lý Like/Bỏ like bài viết
+  const handleLikeArticle = async () => {
+    try {
+      const { userId } = await getUserCredentials();
+      const liked = isLiked ? 0 : 1;
+      await likeArticleApi(userId, postDetail.article_id, liked);
+      setIsLiked(!isLiked);
+      setLikes(likes + (liked ? 1 : -1));
+      Toast.show({
+        type: 'success',
+        position: 'bottom',
+        text1: 'Thành công',
+        text2: isLiked ? 'Đã bỏ thích bài viết.' : 'Đã thích bài viết.',
+      });
+    } catch (error) {
+      console.error('Lỗi khi like bài viết:', error.message);
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Lỗi',
+        text2: 'Không thể thực hiện thao tác thích bài viết.',
+      });
+    }
+  };
+
+  // Hàm đăng bình luận
+  const handlePostComment = async () => {
+    if (!newComment.trim()) {
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Thông báo',
+        text2: 'Vui lòng nhập nội dung bình luận.',
+      });
+      return;
+    }
+
+    try {
+      const { userId } = await getUserCredentials();
+      const response = await postCommentApi(postDetail.article_id, newComment, userId);
+      setComments([...comments, response]); // Thêm bình luận mới vào danh sách
+      setNewComment(''); // Xóa nội dung input
+      Toast.show({
+        type: 'success',
+        position: 'bottom',
+        text1: 'Thành công',
+        text2: 'Bình luận đã được đăng.',
+      });
+    } catch (error) {
+      console.error('Lỗi khi đăng bình luận:', error.message);
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Lỗi',
+        text2: 'Không thể đăng bình luận.',
+      });
+    }
+  };
+
+  // Hàm sửa bình luận
+  const handleEditComment = async (commentId, newContent) => {
+    try {
+      await editCommentApi(postDetail.article_id, newContent, commentId);
+      setComments(
+        comments.map((comment) =>
+          comment.comment_id === commentId ? { ...comment, content: newContent } : comment
+        )
+      );
+      Toast.show({
+        type: 'success',
+        position: 'bottom',
+        text1: 'Thành công',
+        text2: 'Bình luận đã được sửa.',
+      });
+    } catch (error) {
+      console.error('Lỗi khi sửa bình luận:', error.message);
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Lỗi',
+        text2: 'Không thể sửa bình luận.',
+      });
+    }
+  };
+
+  // Hàm xóa bình luận
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await deleteCommentApi(postDetail.article_id, commentId);
+      setComments(comments.filter((comment) => comment.comment_id !== commentId));
+      Toast.show({
+        type: 'success',
+        position: 'bottom',
+        text1: 'Thành công',
+        text2: 'Bình luận đã được xóa.',
+      });
+    } catch (error) {
+      console.error('Lỗi khi xóa bình luận:', error.message);
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Lỗi',
+        text2: 'Không thể xóa bình luận.',
+      });
+    }
+  };
+
   // Hàm chuyển sang màn hình Profile
   const handleNavigateToProfile = async (targetUserId) => {
     if (!targetUserId) {
       console.error('Không tìm thấy userId để chuyển đến trang cá nhân.');
-      Alert.alert('Lỗi', 'Không thể chuyển đến trang cá nhân do thiếu thông tin người dùng.');
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Lỗi',
+        text2: 'Không thể chuyển đến trang cá nhân do thiếu thông tin người dùng.',
+      });
       return;
     }
-  
+
     try {
       // Lấy userId đang đăng nhập từ AsyncStorage
       const { userId } = await getUserCredentials();
-  
+
       console.log('Navigating to Profile. TargetUserId:', targetUserId, 'CurrentUserId:', userId);
-  
+
       if (targetUserId === userId) {
         // Nếu targetUserId trùng với userId hiện tại, chuyển đến màn hình Profile
         navigation.navigate('Profile', {
@@ -41,7 +158,12 @@ const PostDetailScreen = ({ route }) => {
       }
     } catch (error) {
       console.error('Lỗi khi lấy thông tin người dùng:', error);
-      Alert.alert('Lỗi', 'Không thể thực hiện điều hướng do lỗi dữ liệu.');
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Lỗi',
+        text2: 'Không thể thực hiện điều hướng do lỗi dữ liệu.',
+      });
     }
   };
 
@@ -123,47 +245,44 @@ const PostDetailScreen = ({ route }) => {
 
       {/* Thông tin tương tác */}
       <View style={styles.interactionContainer}>
-        <View style={styles.interaction}>
-          <Icon name="favorite-border" size={20} color="#000" />
-          <Text>{postDetail.number_reaction} Lượt thích</Text>
-        </View>
+        <TouchableOpacity style={styles.interaction} onPress={handleLikeArticle}>
+          <Icon name={isLiked ? 'favorite' : 'favorite-border'} size={20} color="#f00" />
+          <Text>{likes} Lượt thích</Text>
+        </TouchableOpacity>
         <View style={styles.interaction}>
           <Icon name="chat-bubble-outline" size={20} color="#000" />
-          <Text>{postDetail.number_comment} Bình luận</Text>
+          <Text>{comments.length} Bình luận</Text>
         </View>
       </View>
 
-      {/* Bình luận */}
+      {/* Thêm bình luận */}
+      <View style={styles.addCommentContainer}>
+        <TextInput
+          style={styles.commentInput}
+          placeholder="Viết bình luận..."
+          value={newComment}
+          onChangeText={setNewComment}
+        />
+        <TouchableOpacity onPress={handlePostComment} style={styles.commentButton}>
+          <Text>Gửi</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Danh sách bình luận */}
       <View style={styles.commentsContainer}>
-        {(postDetail.comments || []).map((comment) => (
-          <View key={`comment-${comment.comment_id}`} style={styles.comment}>
-            {/* Avatar */}
+        {comments.map((comment) => (
+          <View key={comment.comment_id} style={styles.comment}>
             <TouchableOpacity onPress={() => handleNavigateToProfile(comment.user_id)}>
               <Image source={{ uri: comment.avatar_path }} style={styles.commentAvatar} />
             </TouchableOpacity>
             <View style={styles.commentContent}>
-              {/* Username */}
               <TouchableOpacity onPress={() => handleNavigateToProfile(comment.user_id)}>
                 <Text style={styles.commentUsername}>{comment.username}</Text>
               </TouchableOpacity>
               <Text>{comment.content}</Text>
-
-              {/* Phản hồi bình luận */}
-              {(comment.child_comments || []).map((child) => (
-                <View key={`child-comment-${child.comment_id}`} style={styles.childComment}>
-                  {/* Avatar */}
-                  <TouchableOpacity onPress={() => handleNavigateToProfile(child.user_id)}>
-                    <Image source={{ uri: child.avatar_path }} style={styles.commentAvatar} />
-                  </TouchableOpacity>
-                  <View style={styles.commentContent}>
-                    {/* Username */}
-                    <TouchableOpacity onPress={() => handleNavigateToProfile(child.user_id)}>
-                      <Text style={styles.commentUsername}>{child.username}</Text>
-                    </TouchableOpacity>
-                    <Text>{child.content}</Text>
-                  </View>
-                </View>
-              ))}
+              <TouchableOpacity onPress={() => handleDeleteComment(comment.comment_id)}>
+                <Text style={styles.deleteCommentText}>Xóa</Text>
+              </TouchableOpacity>
             </View>
           </View>
         ))}

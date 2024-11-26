@@ -1,19 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import {
-  View,
-  Text,
-  Image,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-  RefreshControl,
-  Alert,
-} from 'react-native';
+import { View, Text, Image, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
 import { fetchPosts, fetchPostDetail } from '../../../api/postapi';
 import { getUserInfoApi } from '../../../api/profileapi';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import Toast from 'react-native-toast-message';  
 import Swiper from 'react-native-swiper';
 import Video from 'react-native-video';
 import styles from './homestyle';
@@ -78,17 +70,22 @@ const HomeScreen = () => {
       }
     } catch (error) {
       console.error('Lỗi khi tải bài viết:', error);
-      Alert.alert('Thông báo', 'Đã xảy ra lỗi khi tải bài viết. Vui lòng thử lại.');
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Thông báo',
+        text2: 'Đã xảy ra lỗi khi tải bài viết. Vui lòng thử lại.',
+      });
     } finally {
       if (refresh) setRefreshing(false);
       else setLoading(false);
     }
-  };  
-
+  };
+  
   useEffect(() => {
     loadPosts();
   }, [page]);
-
+  
   // Hàm chuyển sang màn hình chi tiết bài viết
   const handlePostPress = async (articleId, ownerId) => {
     try {
@@ -96,13 +93,24 @@ const HomeScreen = () => {
       if (articleDetail.success) {
         navigation.navigate('PostDetail', { postDetail: articleDetail.data });
       } else {
-        Alert.alert('Thông báo', 'Không thể lấy chi tiết bài viết. Vui lòng thử lại sau!');
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: 'Thông báo',
+          text2: 'Không thể lấy chi tiết bài viết. Vui lòng thử lại sau!',
+        });
       }
     } catch (error) {
       console.error('Lỗi khi lấy chi tiết bài viết:', error.message);
-      Alert.alert('Thông báo', 'Đã xảy ra lỗi khi lấy chi tiết bài viết!');
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Thông báo',
+        text2: 'Đã xảy ra lỗi khi lấy chi tiết bài viết!',
+      });
     }
   };
+  
 
   // Hàm render từng bài viết
   const renderPost = ({ item }) => {
