@@ -12,8 +12,9 @@ const createHeadersWithToken = async () => {
 };
 
 // API: Lấy danh sách yêu cầu kết bạn nhận được
-export const getFriendRequestsReceived = async (userId) => {
+export const getFriendRequestsReceived = async () => {
   try {
+    const { userId } = await getUserCredentials();
     const headers = await createHeadersWithToken();
     const response = await axios.get(`${BASE_URL}/users/${userId}/sended-friend`, {
       headers,
@@ -26,8 +27,9 @@ export const getFriendRequestsReceived = async (userId) => {
 };
 
 // API: Lấy danh sách yêu cầu kết bạn đã gửi
-export const getFriendRequestsSent = async (userId) => {
+export const getFriendRequestsSent = async () => {
   try {
+    const { userId } = await getUserCredentials();
     const headers = await createHeadersWithToken();
     const response = await axios.get(`${BASE_URL}/users/${userId}/send-friend`, {
       headers,
