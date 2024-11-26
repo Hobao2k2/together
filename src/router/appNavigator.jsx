@@ -6,10 +6,12 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import HomeScreen from '../screens/home/mainhome/homescreen';
 import SearchScreen from '../screens/search/searchscreen';
 import AddPostScreen from '../screens/post/addpost/addpostscreen';
+import NotificationsNavigator from './notificationsnavigator';
 import ProfileScreen from '../screens/profile/profile_loggedin/profilescreen';
 import ProfileOtherUserScreen from '../screens/profile/profile_other/profileotheruserscreen';
 import PostDetailScreen from '../screens/post/postdetail/postdetailscreen';
 import EditPostScreen from '../screens/post/editpost/editpostscreen';
+import ChatUserScreen from '../screens/messages/chats/chatusersreen';
 import LoginScreen from '../screens/auth/login/loginscreen';
 import RegisterScreen from '../screens/auth/register/registerscreen';
 import ForgotPasswordScreen from '../screens/auth/forgotpassword/forgotpasswordscreen';
@@ -27,6 +29,7 @@ function ProfileStackNavigator({ setIsLoggedIn }) {
         {props => <ProfileScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
       </Stack.Screen>
       <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
+      <Stack.Screen name="ChatUser" component={ChatUserScreen} />
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
       <Stack.Screen name="EditPost" component={EditPostScreen} />
     </Stack.Navigator>
@@ -50,6 +53,7 @@ function SearchStackNavigator() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Search" component={SearchScreen} />
       <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
+      <Stack.Screen name="ChatUser" component={ChatUserScreen} />
     </Stack.Navigator>
   );
 }
@@ -84,6 +88,15 @@ function MainTabNavigator({ setIsLoggedIn }) {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
+        tabBarStyle: {
+          // Ẩn TabBar nếu ở màn hình ChatUser
+          display: route.name === 'ChatUser' ? 'none' : 'flex',
+          height: 60,
+          paddingTop: 10,
+          paddingBottom: 6,
+          borderTopWidth: 2,
+          borderTopColor: '#e0e0e0',
+        },
         tabBarIcon: ({ color, size }) => {
           let iconName;
           if (route.name === 'Home') {
@@ -99,13 +112,6 @@ function MainTabNavigator({ setIsLoggedIn }) {
         },
         tabBarActiveTintColor: '#007aff',
         tabBarInactiveTintColor: '#777',
-        tabBarStyle: {
-          height: 60,
-          paddingTop: 10,
-          paddingBottom: 6,
-          borderTopWidth: 2,
-          borderTopColor: '#e0e0e0',
-        },
         tabBarLabelStyle: { fontSize: 10 },
         headerShown: false,
       })}
@@ -119,7 +125,7 @@ function MainTabNavigator({ setIsLoggedIn }) {
           tabBarIcon: ({ color }) => <AddPostButton color={color} />,
         }}
       />
-      <Tab.Screen name="Notifications" component={HomeStackNavigator} />
+      <Tab.Screen name="Notifications" component={NotificationsNavigator} />
       <Tab.Screen name="Profile">
         {props => <ProfileStackNavigator {...props} setIsLoggedIn={setIsLoggedIn} />}
       </Tab.Screen>

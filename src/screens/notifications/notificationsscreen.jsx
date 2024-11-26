@@ -1,7 +1,7 @@
 import React from 'react';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import AllNotifications from './allnotifications';
-import RequestsReceived from './requestsreceivednotifications';
+import RequestsReceived from './requestsreceivednotifications/requestsreceivednotificationsscreen';
 import RequestsSent from './requestssentnotifications';
 
 const Tab = createMaterialTopTabNavigator();
