@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, TextInput, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons'; // Import biểu tượng Ionicons
+import { useNavigation } from '@react-navigation/native';
 import { fetchMessages, sendMessage } from '../../../api/message';
+import styles from './chatuserstyle';
 
 const ChatUserScreen = ({ senderId, receiverId }) => {
-  const [messages, setMessages] = useState([]); // Danh sách tin nhắn
-  const [page, setPage] = useState(1); // Trang hiện tại
-  const [loading, setLoading] = useState(false); // Trạng thái tải tin nhắn
-  const [newMessage, setNewMessage] = useState(''); // Tin nhắn mới
-  const [hasMore, setHasMore] = useState(true); // Kiểm tra còn tin nhắn không
+  const navigation = useNavigation();
+  const [messages, setMessages] = useState([]);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [newMessage, setNewMessage] = useState('');
+  const [hasMore, setHasMore] = useState(true);
 
-  // Lấy dữ liệu tin nhắn khi component load hoặc page thay đổi
   useEffect(() => {
     loadMessages();
   }, [page]);
@@ -19,9 +22,9 @@ const ChatUserScreen = ({ senderId, receiverId }) => {
 
     setLoading(true);
     try {
-      const data = await fetchMessages(senderId, receiverId, page, 20); // 20 tin nhắn mỗi lần
-      if (data.length === 0) setHasMore(false); // Nếu không còn dữ liệu
-      setMessages((prevMessages) => [...data.reverse(), ...prevMessages]); // Thêm tin nhắn cũ vào đầu danh sách
+      const data = await fetchMessages(senderId, receiverId, page, 20);
+      if (data.length === 0) setHasMore(false);
+      setMessages((prevMessages) => [...data.reverse(), ...prevMessages]);
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     } finally {
@@ -31,36 +34,58 @@ const ChatUserScreen = ({ senderId, receiverId }) => {
 
   const handleSendMessage = async () => {
     if (newMessage.trim() === '') return;
-  
-    // Hiển thị tin nhắn mới trong danh sách trước
+
     const tempMessage = {
       senderId,
       content: newMessage,
       createdAt: new Date(),
     };
-    setMessages((prevMessages) => [...prevMessages, tempMessage]);
-    setNewMessage(''); // Reset ô nhập
-  
+    setMessages((prevMessages) => [tempMessage, ...prevMessages]);
+    setNewMessage('');
+
     try {
-      // Gửi tin nhắn qua API
       await sendMessage(senderId, receiverId, newMessage);
     } catch (error) {
       console.error('Error sending message:', error);
-      // Có thể thêm logic để hiển thị thông báo lỗi nếu cần
     }
-  };  
+  };
+
+  const renderMessage = ({ item }) => {
+    const isSender = item.senderId === senderId;
+    return (
+      <View
+        style={[
+          styles.messageContainer,
+          isSender ? styles.senderMessage : styles.receiverMessage,
+        ]}
+      >
+        <Text style={styles.messageText}>{item.content}</Text>
+        <Text style={styles.timestamp}>
+          {new Date(item.createdAt).toLocaleTimeString()}
+        </Text>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
+      {/* Nút quay lại */}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => navigation.goBack()} // Quay lại màn hình trước đó
+      >
+        <Icon name="arrow-back" size={24} color="#fff" />
+      </TouchableOpacity>
+
       {/* Danh sách tin nhắn */}
       <FlatList
         data={messages}
-        inverted // Hiển thị từ dưới lên
+        inverted
         keyExtractor={(item, index) => index.toString()}
         renderItem={renderMessage}
         onEndReached={() => {
           if (hasMore && !loading) setPage((prevPage) => prevPage + 1);
-        }} // Kéo lên để tải tin nhắn cũ
+        }}
         onEndReachedThreshold={0.5}
         ListFooterComponent={
           loading ? <ActivityIndicator size="small" color="#007bff" /> : null
