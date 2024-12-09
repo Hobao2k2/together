@@ -3,11 +3,12 @@ import { StyleSheet, Dimensions } from 'react-native';
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
+  gradientBackground: {
+    flex: 1,
+  },
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
   },
-
   // Header
   headerContainer: {
     flexDirection: 'row',

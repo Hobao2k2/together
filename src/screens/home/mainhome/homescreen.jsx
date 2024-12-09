@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Image, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, Image, FlatList, ActivityIndicator, TouchableOpacity, RefreshControl, useColorScheme } from 'react-native';
 import { fetchPosts, fetchPostDetail } from '../../../api/postapi';
 import { getUserInfoApi } from '../../../api/profileapi';
+import { likeArticleApi } from '../../../api/comment&like';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -10,6 +11,7 @@ import Swiper from 'react-native-swiper';
 import Video from 'react-native-video';
 import styles from './homestyle';
 import LinearGradient from 'react-native-linear-gradient';
+import { colorStyles } from '../../../styles/colorScheme';
 
 const HomeScreen = () => {
   const [posts, setPosts] = useState([]);
@@ -17,8 +19,11 @@ const HomeScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(0);
   const [isLastPage, setIsLastPage] = useState(false);
-  const [userCache, setUserCache] = useState({}); // Bộ nhớ tạm để lưu thông tin người dùng
+  const [userCache, setUserCache] = useState({}); 
   const navigation = useNavigation();
+
+  const scheme = useColorScheme();
+  const colors = colorStyles[scheme] || colorStyles.light; 
 
   // Hàm tải bài viết
   const loadPosts = async (refresh = false) => {
@@ -85,13 +90,40 @@ const HomeScreen = () => {
   useEffect(() => {
     loadPosts();
   }, [page]);
+
+    // Hàm xử lý Like/Bỏ like bài viết
+    const handleLikeArticle = async () => {
+      try {
+        const liked = isLiked ? 0 : 1;
+        await likeArticleApi(post.user_id, post.id, liked);
+        setIsLiked(!isLiked);
+        setLikes(likes + (liked ? 1 : -1));
+        Toast.show({
+          type: 'success',
+          position: 'bottom',
+          text1: 'Thành công',
+          text2: isLiked ? 'Đã bỏ thích bài viết.' : 'Đã thích bài viết.',
+        });
+      } catch (error) {
+        console.error('Lỗi khi like bài viết:', error.message);
+        Toast.show({
+          type: 'error',
+          position: 'bottom',
+          text1: 'Lỗi',
+          text2: 'Không thể thực hiện thao tác thích bài viết.',
+        });
+      }
+    };
   
   // Hàm chuyển sang màn hình chi tiết bài viết
   const handlePostPress = async (articleId, ownerId) => {
     try {
+      // Lấy chi tiết bài viết từ API
       const articleDetail = await fetchPostDetail(articleId, ownerId);
+      
       if (articleDetail.success) {
-        navigation.navigate('PostDetail', { postDetail: articleDetail.data });
+        // Chuyển đến màn hình PostDetail và chỉ truyền articleId và ownerId
+        navigation.navigate('PostDetail', { articleId, ownerId });
       } else {
         Toast.show({
           type: 'error',
@@ -110,8 +142,8 @@ const HomeScreen = () => {
       });
     }
   };
-  
 
+  // Hàm render từng bài viết
   // Hàm render từng bài viết
   const renderPost = ({ item }) => {
     const mediaData = [
@@ -131,11 +163,11 @@ const HomeScreen = () => {
               source={item.user_avatar ? { uri: item.user_avatar } : require('../../../../assets/image/avatar_icon.png')}
               style={styles.avatarSmall}
             />
-            <Text style={styles.usernamePost}>{item.username}</Text>
+            <Text style={[styles.usernamePost, { color: colors.text }]}>{item.username}</Text>
           </View>
 
           {/* Nội dung bài viết */}
-          <Text style={styles.postContent}>{item.content}</Text>
+          <Text style={[styles.postContent, { color: colors.text }]}>{item.content}</Text>
 
           {/* Media */}
           {mediaData.length > 0 && (
@@ -162,13 +194,13 @@ const HomeScreen = () => {
 
           {/* Footer */}
           <View style={styles.postInteractionContainer}>
-            <TouchableOpacity style={styles.interactionButton}>
-              <Icon name="favorite-border" size={20} color="#000" />
-              <Text style={styles.interactionText}>{item.number_reaction} Likes</Text>
+            <TouchableOpacity style={styles.interactionButton} onPress={handleLikeArticle}>
+              <Icon name="favorite-border" size={20} color={colors.text} />
+              <Text style={[styles.interactionText, { color: colors.text }]}>{item.number_reaction} Likes</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.interactionButton}>
-              <Icon name="chat-bubble-outline" size={20} color="#000" />
-              <Text style={styles.interactionText}>{item.number_comment} Comments</Text>
+            <TouchableOpacity style={styles.interactionButton} onPress={handlePostPress}>
+              <Icon name="chat-bubble-outline" size={20} color={colors.text} />
+              <Text style={[styles.interactionText, { color: colors.text }]}>{item.number_comment} Comments</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -196,16 +228,16 @@ const HomeScreen = () => {
         {/* Header */}
         <View style={styles.headerContainer}>
           <TouchableOpacity onPress={handleRefresh}>
-            <Text style={styles.logoText}>Together</Text>
+            <Text style={[styles.logoText, { color: colors.text }]}>Together</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleNavigateToMessages}>
-            <MaterialCommunityIcons name="facebook-messenger" size={30} color="#000" />
+            <MaterialCommunityIcons name="facebook-messenger" size={30} color={colors.text} />
           </TouchableOpacity>
         </View>
 
         {/* Danh sách bài viết */}
         {loading && page === 0 ? (
-          <ActivityIndicator size="large" color="#0000ff" />
+          <ActivityIndicator size="large" color={colors.text} />
         ) : (
           <FlatList
             data={posts}
@@ -213,7 +245,7 @@ const HomeScreen = () => {
             keyExtractor={(item) => item.id.toString()}
             onEndReached={loadMorePosts}
             onEndReachedThreshold={0.5}
-            ListFooterComponent={loading ? <ActivityIndicator size="small" color="#0000ff" /> : null}
+            ListFooterComponent={loading ? <ActivityIndicator size="small" color={colors.text} /> : null}
             refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />}
           />
         )}

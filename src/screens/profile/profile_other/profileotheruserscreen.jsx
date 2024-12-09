@@ -290,7 +290,7 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
     try {
       const articleDetail = await fetchPostDetail(articleId, ownerId);
       if (articleDetail.success) {
-        navigation.navigate('PostDetail', { postDetail: articleDetail.data });
+        navigation.navigate('PostDetail', { articleId, ownerId });
       } else {
         Toast.show({
           type: 'error',
