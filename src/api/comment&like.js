@@ -21,6 +21,10 @@ export const likeArticleApi = async (userId, articleId, liked) => {
             { user_id: userId, article_id: articleId, liked },
             { headers }
         );
+        
+        // Log response data
+        console.log("API Response:", response.data);
+
         return response.data;
     } catch (error) {
         console.error("Lỗi khi like/bỏ like bài viết:", error.response?.data || error.message);
@@ -33,10 +37,14 @@ export const postCommentApi = async (articleId, content, userId, parentCommentId
     try {
         const headers = await createHeadersWithToken();
         const data = { article_id: articleId, content, user_id: userId };
+        console.log("comment log:", data);
         if (parentCommentId) {
             data.parent_comment_id = parentCommentId;
         }
-        const response = await axios.post(`${BASE_URL}/comment/post-comment`, data, { headers });
+        const response = await axios.post(`${BASE_URL}/comment/post-comment`, data, 
+            { headers });
+        // Log response data
+        console.log("API Response:", response.data);
         return response.data;
     } catch (error) {
         console.error("Lỗi khi đăng comment:", error.response?.data || error.message);
@@ -53,6 +61,8 @@ export const editCommentApi = async (articleId, content, commentId) => {
             { article_id: articleId, content, comment_id: commentId },
             { headers }
         );
+        // Log response data
+        console.log("API Response:", response.data);
         return response.data;
     } catch (error) {
         console.error("Lỗi khi sửa comment:", error.response?.data || error.message);
@@ -68,6 +78,8 @@ export const deleteCommentApi = async (articleId, commentId) => {
             headers,
             data: { article_id: articleId, comment_id: commentId },
         });
+        // Log response data
+        console.log("API Response:", response.data);
         return response.data;
     } catch (error) {
         console.error("Lỗi khi xóa comment:", error.response?.data || error.message);

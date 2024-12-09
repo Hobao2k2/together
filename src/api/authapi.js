@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const BASE_URL = 'http://14.225.254.35:8080/api';
 
+//1. Đăng nhập
 export const loginApi = async (email, password) => {
   try {
     const response = await axios.post(`${BASE_URL}/auth/token`, { email, password });
@@ -27,6 +28,7 @@ export const loginApi = async (email, password) => {
   }
 };
 
+//2. Đăng ký
 export const registerApi = async (username, email, password, dob) => {
   try {
     console.log('Dữ liệu gửi đi:', { username, email, password, dob });  // Log dữ liệu được gửi đi
@@ -62,7 +64,7 @@ export const registerApi = async (username, email, password, dob) => {
   }
 };
 
-// API gửi OTP tới email
+// 3. API gửi OTP tới email
 export const sendOtpApi = async (email) => {
   try {
     const response = await axios.post(`${BASE_URL}/otp/send`, { email });
@@ -82,7 +84,7 @@ export const sendOtpApi = async (email) => {
   }
 };
 
-// API xác thực OTP
+// 4. API xác thực OTP
 export const verifyOtpApi = async (email, otp) => {
   try {
     const response = await axios.post(`${BASE_URL}/otp/verify`, { email, otp });
@@ -99,7 +101,7 @@ export const verifyOtpApi = async (email, otp) => {
   }
 };
 
-// API đặt lại mật khẩu mới qua id người dùng
+// 5. API đặt lại mật khẩu mới qua id người dùng
 export const resetPasswordApi = async (id, password, confirmPassword) => {
   try {
     const response = await axios.put(`${BASE_URL}/users/password/${id}`, {

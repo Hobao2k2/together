@@ -16,7 +16,7 @@ export const getFriendRequestsReceived = async () => {
   try {
     const { userId } = await getUserCredentials();
     const headers = await createHeadersWithToken();
-    const response = await axios.get(`${BASE_URL}/users/${userId}/sended-friend`, {
+    const response = await axios.get(`${BASE_URL}/users/${userId}/send-friend`, {
       headers,
     });
     return response.data;
@@ -31,7 +31,7 @@ export const getFriendRequestsSent = async () => {
   try {
     const { userId } = await getUserCredentials();
     const headers = await createHeadersWithToken();
-    const response = await axios.get(`${BASE_URL}/users/${userId}/send-friend`, {
+    const response = await axios.get(`${BASE_URL}/users/${userId}/sended-friend`, {
       headers,
     });
     return response.data;

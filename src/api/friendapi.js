@@ -11,7 +11,7 @@ const createHeadersWithToken = async () => {
   };
 };
 
-// 1. API gửi yêu cầu kết bạn
+// 7. API gửi yêu cầu kết bạn
 export const sendFriendRequestApi = async (senderId, receiverId) => {
   try {
     const headers = await createHeadersWithToken();

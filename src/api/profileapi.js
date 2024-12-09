@@ -19,7 +19,7 @@ export const getUserCredentials = async () => {
   }
 };
 
-// API lấy thông tin người dùng
+// 8. API lấy thông tin người dùng
 export const getUserInfoApi = async () => {
   try {
     const { userId,token } = await getUserCredentials();  // Lấy thông tin người dùng
@@ -38,7 +38,7 @@ export const getUserInfoApi = async () => {
   }
 };
 
-// API lấy thông tin người dùng khác
+// 8. API lấy thông tin người dùng khác
 export const getOtherUserInfoApi = async (userId) => {
   try {
     const { token } = await getUserCredentials(); // Chỉ lấy token, không lấy userId
@@ -82,6 +82,7 @@ export const updateProfileApi = async (profileData) => {
   }
 };
 
+//9. cập nhật ảnh đại diện và ảnh nền
 export const uploadImageApi = async (photo, type) => {
 
   const { userId, token } = await getUserCredentials(); // Lấy thông tin người dùng

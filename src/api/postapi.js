@@ -180,27 +180,44 @@ export const fetchPosts = async (page, pageSize) => {
 // Lấy chi tiết bài viết
 export const fetchPostDetail = async (article_id, owner_id) => {
   try {
+    const { userId } = await getUserCredentials();
     const headers = {
       ...(await createHeadersWithToken()),
       'Content-Type': 'application/json',
     };
 
     const response = await axios.post(
-      `${BASE_URL}/article/detail-article`,
+      `${BASE_URL}/article/${userId}/detail-article`,
       { article_id, owner_id },
       { headers }
     );
 
+    // Kiểm tra mã lỗi trong phản hồi của API
     if (response.data.code === 1000) {
       return {
         success: true,
         data: response.data.result,
       };
+    } else {
+      // Nếu code không phải 1000, trả về thông báo lỗi
+      console.error('API Error:', response.data);
+      return { success: false, error: 'Error fetching post details' };
     }
-
-    return { success: false, error: 'Error fetching post details' };
   } catch (error) {
-    console.error('Error fetching post details:', error);
-    return { success: false, error: error.message };
+    // Log thông tin lỗi chi tiết trong trường hợp có lỗi
+    if (error.response) {
+      // Trường hợp server trả về mã lỗi, log chi tiết phản hồi
+      console.error('API Error Response:', error.response.data);
+      return { success: false, error: error.response.data.message || 'Error fetching post details' };
+    } else if (error.request) {
+      // Trường hợp không có phản hồi từ server
+      console.error('API No Response:', error.request);
+      return { success: false, error: 'No response from server' };
+    } else {
+      // Trường hợp có lỗi trong quá trình gửi yêu cầu
+      console.error('Error during request setup:', error.message);
+      return { success: false, error: error.message };
+    }
   }
 };
+
