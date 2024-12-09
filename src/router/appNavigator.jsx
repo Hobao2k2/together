@@ -89,8 +89,7 @@ function MainTabNavigator({ setIsLoggedIn }) {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarStyle: {
-          // Ẩn TabBar nếu ở màn hình ChatUser
-          display: route.name === 'ChatUser' ? 'none' : 'flex',
+          display: route.name === 'Home' && route?.state?.routes[route.state.index]?.name === 'PostDetail' ? 'none' : 'flex', // Ẩn TabBar khi ở PostDetail
           height: 60,
           paddingTop: 10,
           paddingBottom: 6,
@@ -116,7 +115,15 @@ function MainTabNavigator({ setIsLoggedIn }) {
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeStackNavigator} />
+      <Tab.Screen
+        name="Home"
+        component={HomeStackNavigator}
+        options={({ route }) => ({
+          tabBarStyle: {
+            display: route.state?.routes[route.state.index]?.name === 'PostDetail' ? 'none' : 'flex', // Ẩn TabBar khi ở PostDetail
+          },
+        })}
+      />
       <Tab.Screen name="Search" component={SearchStackNavigator} />
       <Tab.Screen
         name="AddPost"
@@ -126,7 +133,14 @@ function MainTabNavigator({ setIsLoggedIn }) {
         }}
       />
       <Tab.Screen name="Notifications" component={NotificationsNavigator} />
-      <Tab.Screen name="Profile">
+      <Tab.Screen
+        name="Profile"
+        options={({ route }) => ({
+          tabBarStyle: {
+            display: route.state?.routes[route.state.index]?.name === 'PostDetail' ? 'none' : 'flex', // Ẩn TabBar khi ở PostDetail
+          },
+        })}
+      >
         {props => <ProfileStackNavigator {...props} setIsLoggedIn={setIsLoggedIn} />}
       </Tab.Screen>
     </Tab.Navigator>
