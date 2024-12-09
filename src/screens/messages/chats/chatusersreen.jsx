@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, TextInput, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons'; // Import biểu tượng Ionicons
+import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import { fetchMessages, sendMessage } from '../../../api/message';
 import styles from './chatuserstyle';
@@ -12,6 +12,7 @@ const ChatUserScreen = ({ senderId, receiverId }) => {
   const [loading, setLoading] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [hasMore, setHasMore] = useState(true);
+  const flatListRef = useRef(); // Sử dụng ref để scroll tự động khi có tin nhắn mới
 
   useEffect(() => {
     loadMessages();
@@ -24,7 +25,7 @@ const ChatUserScreen = ({ senderId, receiverId }) => {
     try {
       const data = await fetchMessages(senderId, receiverId, page, 20);
       if (data.length === 0) setHasMore(false);
-      setMessages((prevMessages) => [...data.reverse(), ...prevMessages]);
+      setMessages((prevMessages) => [...data.reverse(), ...prevMessages]); // Đảm bảo thứ tự tin nhắn đúng
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     } finally {
@@ -45,6 +46,8 @@ const ChatUserScreen = ({ senderId, receiverId }) => {
 
     try {
       await sendMessage(senderId, receiverId, newMessage);
+      // Cuộn xuống khi gửi tin nhắn mới
+      flatListRef.current.scrollToOffset({ animated: true, offset: 0 });
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -79,8 +82,8 @@ const ChatUserScreen = ({ senderId, receiverId }) => {
 
       {/* Danh sách tin nhắn */}
       <FlatList
+        ref={flatListRef}
         data={messages}
-        inverted
         keyExtractor={(item, index) => index.toString()}
         renderItem={renderMessage}
         onEndReached={() => {
