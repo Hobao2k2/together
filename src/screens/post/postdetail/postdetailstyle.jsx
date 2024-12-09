@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
   backButton: {
     position: 'absolute',
     top: 20,
-    left: 10,
+    left: 5,
     zIndex: 1,
     padding: 5,
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
@@ -25,7 +25,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
-    marginTop: 50,
+    marginTop: 60,
+    marginLeft: 10,
   },
   avatar: {
     width: 50,
@@ -38,6 +39,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   content: {
+    marginLeft: 12,
     fontSize: 16,
     marginVertical: 10,
   },
@@ -63,7 +65,7 @@ const styles = StyleSheet.create({
     right: 30,
     backgroundColor: 'rgba(0, 0, 0, 0.6)',
     color: '#fff',
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 10,
     fontSize: 14,
@@ -73,39 +75,285 @@ const styles = StyleSheet.create({
   interactionContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    alignItems: 'center',
     marginVertical: 10,
   },
   interaction: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  interactionContent: {
+    paddingHorizontal: 5,
+    marginLeft: 10
+  },
+  scrollViewContainer: {
+    flexGrow: 1,
+    paddingBottom: 50,  // Để tránh nội dung bị che khuất khi bàn phím xuất hiện
+    zIndex: 1002,
+  },
   commentsContainer: {
+    flex: 1,
     marginTop: 20,
-    marginLeft: 30,
+    marginBottom: 40,
+    marginHorizontal: 20,
   },
   comment: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 10,
+    marginBottom: 15,
+  },
+  commentHeader: {
+    flexDirection: 'row', // Đặt các phần tử (avatar, username, menu button) trên cùng một dòng
+    alignItems: 'center', // Canh chỉnh theo chiều dọc
   },
   commentAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    marginRight: 10,
   },
-  commentContent: {
-    flex: 1,
+  usernameMenuContainer: {
+    flexDirection: 'row', // Các phần tử username và menu button nằm cùng dòng
+    alignItems: 'center', // Canh chỉnh theo chiều dọc
+    marginLeft: 10, // Khoảng cách giữa avatar và tên người dùng
   },
   commentUsername: {
+    fontSize: 16,
     fontWeight: 'bold',
   },
+  menuButton: {
+    marginLeft: 10,
+  },
+  menupostContainer: {
+    position: 'absolute',
+    top: 50, // Điều chỉnh cho phù hợp với giao diện
+    right: 0,
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: '#ccc',
+    zIndex: 10,
+  },
+  menupostOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
+  menupostText: {
+    marginLeft: 10,
+    fontSize: 14,
+  },
+  commentTextContainer: {
+    marginTop: 10, // Đảm bảo khoảng cách giữa tên và nội dung bình luận
+  },
+  commentText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  
   childComment: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    marginLeft: 40,
+    marginLeft: 40,         // Thụt lề cho bình luận con
+    marginTop: 5,           // Khoảng cách giữa bình luận cha và bình luận con
+  },
+
+    // Style cho phần nhập bình luận (addCommentContainer)
+    addCommentContainer: {
+      position: 'absolute',
+      bottom: 0,  // Đưa ô nhập bình luận lên gần dưới cùng, khoảng cách từ dưới cùng là 20
+      left: 0,
+      right: 0,
+      backgroundColor: '#fff',
+      padding: 10,
+      borderTopWidth: 1,
+      borderTopColor: '#ddd',
+      flexDirection: 'row',
+      alignItems: 'center',
+      zIndex: 1000,  // Đảm bảo phần này luôn nằm trên các phần khác
+    },
+  
+    replyingToText: {
+      position: 'absolute',
+      bottom: 70,  // Đặt nó ngay trên phần nhập bình luận, khoảng cách 70px từ dưới
+      left: 0,     // Đặt từ trái
+      right: 0,    // Đặt từ phải
+      fontSize: 14,
+      color: '#555',
+      fontStyle: 'italic',
+      zIndex: 1001, // Đảm bảo không bị che khuất
+      textAlign: 'center',  // Căn giữa chữ theo chiều ngang
+      paddingTop: 5,        // Khoảng cách trên chữ
+      paddingLeft: 0,       // Bỏ paddingLeft để căn chính giữa
+      paddingRight: 0,      // Bỏ paddingRight để căn chính giữa
+    },
+    
+  commentInput: {
+    flex: 1,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f0f0f0',
+    paddingLeft: 15,
+    paddingRight: 15,
+  },
+  commentButton: {
+    marginLeft: 10,
+    backgroundColor: '#6200ea', // Màu nền của nút gửi
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  commentButtonText: {
+    color: '#fff', // Màu chữ của nút
+    fontSize: 16,
+    fontWeight: 'bold', // Chữ đậm cho dễ nhìn
+  },
+  // Bình luận con
+  childCommentsContainer: {
+    marginTop: 10,
+    marginLeft: 30, // Thụt lề để phân biệt bình luận con
+  },
+  childComment: {
+    marginBottom: 10,
+  },
+  replyButton: {
+    marginTop: 10,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+    alignSelf: 'flex-start',
+  },
+  replyButtonText: {
+    fontSize: 14,
+    color: '#007bff',
+  },
+  childCommentsContainer: {
+    marginLeft: 20, // Thụt vào so với bình luận cha
+    marginTop: 10,
+  },
+  childComment: {
+    marginBottom: 10,
+  },
+  commentHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  commentAvatar: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    marginRight: 10,
+  },
+  commentUsername: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  commentText: {
+    fontSize: 14,
+    color: '#666',
     marginTop: 5,
   },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Lớp nền mờ
+  },
+  
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    width: width - 40, // Đặt chiều rộng cho modal
+    alignItems: 'center',
+  },
+  
+  modalInput: {
+    width: '100%',
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 20,
+    paddingLeft: 10,
+  },
+  
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    width: '100%',
+  },
+  
+  modalButton: {
+    backgroundColor: '#007BFF',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  
+  modalButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  
+  // Menu Button (Nút chỉnh sửa/xóa)
+  menuButton: {
+    marginHorizontal: 5,
+  },
+  
+  menupostContainer: {
+    position: 'absolute',
+    right: 10,
+    top: 10,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+    zIndex: 10,
+  },
+  
+  menupostOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 5,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  
+  menupostText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#333',
+  },
+  
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  
+  commentTextContainer: {
+    marginTop: 8,           // Khoảng cách giữa tên người dùng và nội dung bình luận
+    paddingHorizontal: 10,  // Padding cho phần nội dung để văn bản không dính vào cạnh
+  },
+  
+  commentText: {
+    fontSize: 14,
+    color: '#555',
+    lineHeight: 20,         // Điều chỉnh line height để nội dung dễ đọc hơn
+    flexWrap: 'wrap',       // Cho phép văn bản xuống dòng khi cần thiết
+    width: '100%',          // Đảm bảo nội dung chiếm toàn bộ chiều rộng
+  }  
 });
 
 export default styles;
