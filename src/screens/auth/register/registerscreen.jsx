@@ -44,8 +44,11 @@ const RegisterScreen = ({ navigation }) => {
         type: 'success',
         text1: 'Thành công',
         text2: 'Đăng ký thành công',
+        visibilityTime: 3000,
       });
-      navigation.navigate('Login');
+      setTimeout(() => {
+        navigation.navigate('Login');
+      }, 500); 
     } catch (error) {
       Toast.show({
         type: 'error',

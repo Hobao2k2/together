@@ -1,6 +1,9 @@
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
+    gradientBackground: {
+      flex: 1,
+    },
     center: {
         flex: 1,
         justifyContent: 'center',
