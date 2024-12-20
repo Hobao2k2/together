@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Alert, StyleSheet } from 'react-native';
 import { resetPasswordApi } from '../../../api/authapi';  // Import API đặt lại mật khẩu
+import LinearGradient from 'react-native-linear-gradient';
 
 const ResetPasswordScreen = ({ route, navigation }) => {
   const { id, email } = route.params;  // Nhận id và email từ tham số điều hướng
@@ -31,6 +32,7 @@ const ResetPasswordScreen = ({ route, navigation }) => {
   };
 
   return (
+    <LinearGradient colors={['#6fa3fe', '#d4f6ff', '#ffe3e3']} style={styles.gradientBackground}>
     <View style={styles.container}>
       <Text>Nhập mật khẩu mới cho tài khoản {email}</Text>
       <TextInput
@@ -51,11 +53,19 @@ const ResetPasswordScreen = ({ route, navigation }) => {
         <Text style={styles.buttonText}>Đặt lại mật khẩu</Text>
       </TouchableOpacity>
     </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
+  gradientBackground: {
+    flex: 1,
+  },
+  container: {
+      flex: 1,
+      justifyContent: 'center',
+      padding: 20,
+  },
   input: { height: 50, borderColor: 'gray', borderWidth: 1, marginBottom: 20, padding: 10 },
   button: { backgroundColor: '#007BFF', padding: 15, alignItems: 'center' },
   buttonText: { color: 'white', fontWeight: 'bold' },

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Alert, StyleSheet } from 'react-native';
 import { sendOtpApi } from '../../../api/authapi';  // Import hàm API gửi OTP
+import LinearGradient from 'react-native-linear-gradient';
 
 const ForgotPasswordScreen = ({ navigation }) => {
   const [email, setEmail] = useState('');
@@ -24,6 +25,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
   };
 
   return (
+    <LinearGradient colors={['#6fa3fe', '#d4f6ff', '#ffe3e3']} style={styles.gradientBackground}>
     <View style={styles.container}>
       <TextInput
         style={styles.input}
@@ -37,11 +39,19 @@ const ForgotPasswordScreen = ({ navigation }) => {
         <Text style={styles.buttonText}>Gửi OTP</Text>
       </TouchableOpacity>
     </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
+  gradientBackground: {
+    flex: 1,
+  },
+  container: {
+      flex: 1,
+      justifyContent: 'center',
+      padding: 20,
+  },
   input: { height: 50, borderColor: 'gray', borderWidth: 1, marginBottom: 20, padding: 10 },
   button: { backgroundColor: '#007BFF', padding: 15, alignItems: 'center' },
   buttonText: { color: 'white', fontWeight: 'bold' },

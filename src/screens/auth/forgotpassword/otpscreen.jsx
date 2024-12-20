@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Alert, StyleSheet } from 'react-native';
 import { verifyOtpApi } from '../../../api/authapi';  // Import API xác thực OTP
+import LinearGradient from 'react-native-linear-gradient';
 
 const OtpScreen = ({ route, navigation }) => {
   const { email } = route.params;
@@ -42,6 +43,7 @@ const OtpScreen = ({ route, navigation }) => {
   };
 
   return (
+    <LinearGradient colors={['#6fa3fe', '#d4f6ff', '#ffe3e3']} style={styles.gradientBackground}>
     <View style={styles.container}>
       <Text>Nhập OTP được gửi đến email {email}</Text>
       <TextInput
@@ -57,13 +59,21 @@ const OtpScreen = ({ route, navigation }) => {
         <Text style={styles.buttonText}>Xác nhận OTP</Text>
       </TouchableOpacity>
     </View>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 20 },
+  gradientBackground: {
+    flex: 1,
+  },
+  container: {
+      flex: 1,
+      justifyContent: 'center',
+      padding: 20,
+  },
   input: { height: 50, borderColor: 'gray', borderWidth: 1, marginBottom: 20, padding: 10 },
-  button: { backgroundColor: '#007BFF', padding: 15, alignItems: 'center' },
+  button: { backgroundColor: '#007BFF', padding: 15, alignItems: 'center', justifyContent: 'center' },
   buttonText: { color: 'white', fontWeight: 'bold' },
 });
 
