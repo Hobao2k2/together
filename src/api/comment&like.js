@@ -86,3 +86,23 @@ export const deleteCommentApi = async (articleId, commentId) => {
         throw error;
     }
 };
+
+// 5. Get Comments and Comment Count API
+export const fetchCommentsApi = async (articleId, offset = 0, pageSize = 10) => {
+    try {
+        const headers = await createHeadersWithToken();
+        const response = await axios.get(
+            `${BASE_URL}/comment/get-comments-article/id/${offset}/${pageSize}`,
+            { headers }
+        );
+
+        // Log response data
+        console.log("API Response:", response.data);
+        
+        // Trả về danh sách bình luận và tổng số bình luận
+        return response.data; // Ví dụ, trả về { comments, total_comments }
+    } catch (error) {
+        console.error("Lỗi khi lấy danh sách comment:", error.response?.data || error.message);
+        throw error;
+    }
+};

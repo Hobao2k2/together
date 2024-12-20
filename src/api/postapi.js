@@ -125,7 +125,7 @@ export const getUserPostsApi = async (page = 0, pageSize = 10) => {
     // Trả về dữ liệu từ API (giả sử response.data là mảng bài viết)
     const headers = await createHeadersWithToken();
     const response = await axios.get(
-      `${BASE_URL}/article/${userId}/get-articles/${page}/${pageSize}`,
+      `${BASE_URL}/article/${userId}/${userId}/get-articles/${page}/${pageSize}`,
       { headers }
     );
     return response.data;
@@ -137,12 +137,13 @@ export const getUserPostsApi = async (page = 0, pageSize = 10) => {
 };
 
 // Lấy các bài viết của người dùng khác
-export const getOtherUserPostsApi = async (userId, page = 0, pageSize = 10) => {
+export const getOtherUserPostsApi = async (otheruserId, page = 0, pageSize = 10) => {
   try {
     // Trả về dữ liệu từ API (giả sử response.data là mảng bài viết)
+    const { userId } = await getUserCredentials();
     const headers = await createHeadersWithToken();
     const response = await axios.get(
-        `${BASE_URL}/article/${userId}/get-articles/${page}/${pageSize}`,
+        `${BASE_URL}/article/${userId}/${otheruserId}/get-articles/${page}/${pageSize}`,
         { headers }
     );
     return response.data;
