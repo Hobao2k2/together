@@ -4,6 +4,7 @@ const { width, height } = Dimensions.get('window');
 const postSize = width - 20;
 
 const styles = StyleSheet.create({
+  
   container: {
     flex: 1, 
     alignItems: 'center',

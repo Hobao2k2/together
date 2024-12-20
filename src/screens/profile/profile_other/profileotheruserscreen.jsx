@@ -35,6 +35,7 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
   const [menuBlockVisible, setMenuBlockVisible] = useState(false); // Hiển thị menu block
   const [currentUserId, setCurrentUserId] = useState(null);
   const [isInitializing, setIsInitializing] = useState(true); // Thêm cờ khởi tạo
+  const [isFetched, setIsFetched] = useState(false);
 
   const [profile, setProfile] = useState({
     username: '',
@@ -77,41 +78,38 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
 
   // Fetch bài viết của người dùng
   const fetchUserPosts = async () => {
-
-    if (!currentUserId || !userIdFromRoute) {
-      console.warn('fetchUserPosts: currentUserId hoặc userIdFromRoute không hợp lệ.');
+    if (isFetched || !currentUserId || !userIdFromRoute) {
+      console.warn('Dữ liệu đã được tải hoặc thông tin không hợp lệ.');
       return;
     }
-
-    try {
-      if (page === 0) {
-        setPosts([]); // Xóa bài viết cũ nếu là lần tải đầu tiên
-      }
   
+    try {
+      setPostsLoading(true);
       const response = await getOtherUserPostsApi(userIdFromRoute, page, pageSize);
       const postsData = response.result;
   
       if (Array.isArray(postsData)) {
         setPosts((prevPosts) => {
           const uniquePosts = [...prevPosts, ...postsData].reduce((acc, current) => {
-            const exists = acc.find(item => item.id === current.id);
+            const exists = acc.find((item) => item.id === current.id);
             if (!exists) acc.push(current);
             return acc;
           }, []);
-  
           return uniquePosts;
         });
   
         if (postsData.length < pageSize) {
           setHasMorePosts(false); // Không còn bài viết mới
         }
+  
+        setIsFetched(true); // Đánh dấu đã tải dữ liệu
       }
     } catch (error) {
       console.error('Lỗi khi lấy bài viết:', error);
     } finally {
       setPostsLoading(false);
     }
-  };  
+  };
 
   const fetchRelationshipStatus = async () => {
 
@@ -288,8 +286,11 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
 
   const handlePostPress = async (articleId, ownerId) => {
     try {
+      // Lấy chi tiết bài viết từ API
       const articleDetail = await fetchPostDetail(articleId, ownerId);
+      
       if (articleDetail.success) {
+        // Chuyển đến màn hình PostDetail và chỉ truyền articleId và ownerId
         navigation.navigate('PostDetail', { articleId, ownerId });
       } else {
         Toast.show({
@@ -446,7 +447,14 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.messageButton}
-                onPress={() => navigation.navigate('ChatUser', { userId: userIdFromRoute })}
+                onPress={() => {
+                  if (currentUserId && userIdFromRoute) {
+                    navigation.navigate('ChatUser', {
+                      senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
+                      receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                    });
+                  }
+                }}
               >
                 <Text style={styles.messageButtonText}>Nhắn tin</Text>
               </TouchableOpacity>
@@ -500,7 +508,14 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
             </TouchableOpacity>
             <TouchableOpacity
                 style={styles.messageButton}
-                onPress={() => navigation.navigate('ChatUser', { userId: userIdFromRoute })}
+                onPress={() => {
+                  if (currentUserId && userIdFromRoute) {
+                    navigation.navigate('ChatUser', {
+                      senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
+                      receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                    });
+                  }
+                }}
               >
                 <Text style={styles.messageButtonText}>Nhắn tin</Text>
             </TouchableOpacity>
@@ -537,7 +552,14 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
             </TouchableOpacity>
             <TouchableOpacity
                 style={styles.messageButton}
-                onPress={() => navigation.navigate('ChatUser', { userId: userIdFromRoute })}
+                onPress={() => {
+                  if (currentUserId && userIdFromRoute) {
+                    navigation.navigate('ChatUser', {
+                      senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
+                      receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                    });
+                  }
+                }}
               >
                 <Text style={styles.messageButtonText}>Nhắn tin</Text>
             </TouchableOpacity>
@@ -563,7 +585,14 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.messageButton}
-                  onPress={() => navigation.navigate('ChatUser', { userId: userIdFromRoute })}
+                  onPress={() => {
+                    if (currentUserId && userIdFromRoute) {
+                      navigation.navigate('ChatUser', {
+                        senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
+                        receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                      });
+                    }
+                  }}
                 >
                   <Text style={styles.messageButtonText}>Nhắn tin</Text>
               </TouchableOpacity>
@@ -580,7 +609,14 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
             </TouchableOpacity>
             <TouchableOpacity
                 style={styles.messageButton}
-                onPress={() => navigation.navigate('ChatUser', { userId: userIdFromRoute })}
+                onPress={() => {
+                  if (currentUserId && userIdFromRoute) {
+                    navigation.navigate('ChatUser', {
+                      senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
+                      receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                    });
+                  }
+                }}
               >
                 <Text style={styles.messageButtonText}>Nhắn tin</Text>
             </TouchableOpacity>
@@ -644,11 +680,12 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
         renderItem={renderPostItem}
         keyExtractor={(item) => item.id || item.uniqueIdentifier}
         onEndReached={() => fetchUserPosts()}
+        nestedScrollEnabled={true}
         onEndReachedThreshold={0.5}
         ListHeaderComponent={
           <>
             {/* Phần ảnh bìa và avatar */}
-            <LinearGradient colors={['#6a11cb', '#2575fc']} style={styles.wallpaperContainer}>
+            <LinearGradient colors={['#6a11cb', '#2575fc']} style={[styles.wallpaperContainer, { flex: 1 }]}>
               {/* Ảnh bìa */}
               <Image
                 source={profile.wallpaper_path ? { uri: profile.wallpaper_path } : require('../../../../assets/image/wallpaper.png')}
