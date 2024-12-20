@@ -2,7 +2,7 @@ import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import AllNotifications from '../screens/notifications/allnotifications'; 
-import RequestsSentNotifications from '../screens/notifications/requestssentnotifications'; 
+import RequestsSentNotifications from '../screens/notifications/requestssentnotifications/requestssentnotificationsscreen'; 
 import RequestsReceivedNotifications from '../screens/notifications/requestsreceivednotifications/requestsreceivednotificationsscreen'; 
 import NotificationDetailScreen from '../screens/notifications/notificationdetailscreen'; 
 
