@@ -3,74 +3,105 @@ import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9', // Màu nền chung cho màn hình
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ced4da',
   },
   backButton: {
+    marginRight: 10,
+  },
+  receiverInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatar: {
     width: 40,
     height: 40,
-    backgroundColor: '#007bff', // Màu nền xanh
-    borderRadius: 20, // Hình tròn
-    justifyContent: 'center',
-    alignItems: 'center', // Căn giữa mũi tên
-    margin: 10,
+    borderRadius: 20,
+    marginRight: 10,
+  },
+  username: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#212529',
+  },
+  messageList: {
+    flex: 1,
+    paddingHorizontal: 10,
   },
   messageContainer: {
     marginVertical: 5,
-    padding: 10,
-    borderRadius: 8,
-    maxWidth: '75%', // Tin nhắn không chiếm toàn bộ chiều ngang
+    maxWidth: '75%',
+    padding: 12,
+    borderRadius: 15,
   },
-  senderMessage: {
+  myMessageContainer: {
     alignSelf: 'flex-end',
-    backgroundColor: '#007bff', // Màu tin nhắn người gửi
-    borderRadius: 8,
+    backgroundColor: '#d1e7dd',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
   },
-  receiverMessage: {
+  theirMessageContainer: {
     alignSelf: 'flex-start',
-    backgroundColor: '#e1e1e1', // Màu tin nhắn người nhận
-    borderRadius: 8,
+    backgroundColor: '#f8d7da',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
   },
   messageText: {
     fontSize: 16,
-    color: '#fff', // Màu chữ người gửi
+    color: '#495057',
   },
   timestamp: {
-    fontSize: 12,
-    color: '#ccc',
-    marginTop: 5,
+    fontSize: 11,
+    marginTop: 4,
+    color: '#6c757d',
     textAlign: 'right',
   },
   inputContainer: {
     flexDirection: 'row',
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: '#ccc',
     padding: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#e9ecef',
     backgroundColor: '#fff',
   },
   input: {
     flex: 1,
-    height: 40,
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 20,
+    borderColor: '#ced4da',
+    borderRadius: 25,
     paddingHorizontal: 15,
+    height: 40,
     fontSize: 16,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: '#f8f9fa',
   },
   sendButton: {
     marginLeft: 10,
-    backgroundColor: '#007bff',
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
+    paddingHorizontal: 20,
+    height: 40,
+    backgroundColor: '#007bff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 1,
   },
   sendButtonText: {
-    color: '#fff',
-    fontWeight: 'bold',
     fontSize: 16,
+    fontWeight: 'bold',
+    color: '#fff',
   },
 });
 
