@@ -161,7 +161,7 @@ const SearchScreen = ({ navigation }) => {
   );
 
   return (
-    <LinearGradient colors={['#6fa3fe', '#d4f6ff', '#ffe3e3']} style={{ flex: 1 }}>
+    <LinearGradient colors={['#6fa3fe', '#d4f6ff', '#ffe3e3']} style={styles.gradientBackground}>
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         <TextInput
           style={[
