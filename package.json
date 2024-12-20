@@ -17,6 +17,7 @@
     "@react-navigation/material-top-tabs": "^7.0.7",
     "@react-navigation/native": "^7.0.4",
     "@react-navigation/stack": "^7.0.6",
+    "@stomp/stompjs": "^7.0.0",
     "axios": "^1.7.7",
     "core-js": "^3.39.0",
     "lottie-react-native": "^7.0.0",
@@ -40,8 +41,7 @@
     "react-native-vector-icons": "^10.2.0",
     "react-native-video": "^6.7.0",
     "react-native-zip-archive": "^7.0.1",
-    "sockjs-client": "^1.6.1",
-    "stompjs": "^2.3.3"
+    "socket.io-client": "^4.8.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
