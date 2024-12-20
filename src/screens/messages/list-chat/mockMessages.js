@@ -1,0 +1,48 @@
+export const mockMessages = [
+    {
+      id: 1,
+      userName: 'Darlene Steward',
+      avatar: 'https://i.pravatar.cc/50?img=1',
+      lastMessage: 'Pls take a look at the images.',
+      timestamp: '18.31',
+      unread: 5,
+      type: 'user',
+    },
+    {
+      id: 2,
+      userName: 'Fullsnack Designers',
+      avatar: 'https://i.pravatar.cc/50?img=2',
+      lastMessage: 'Hello guys, we have discussed about...',
+      timestamp: '16.04',
+      unread: 0,
+      type: 'group',
+    },
+    {
+      id: 3,
+      userName: 'Lee Williamson',
+      avatar: 'https://i.pravatar.cc/50?img=3',
+      lastMessage: 'Yes, that’s gonna work, hopefully.',
+      timestamp: '06.12',
+      unread: 0,
+      type: 'user',
+    },
+    {
+      id: 4,
+      userName: 'Ronald Mccoy',
+      avatar: 'https://i.pravatar.cc/50?img=4',
+      lastMessage: 'Thanks dude 😌',
+      timestamp: 'Yesterday',
+      unread: 0,
+      type: 'user',
+    },
+    {
+      id: 5,
+      userName: 'Albert Bell',
+      avatar: 'https://i.pravatar.cc/50?img=5',
+      lastMessage: 'I’m happy this anime has such grea...',
+      timestamp: 'Yesterday',
+      unread: 0,
+      type: 'user',
+    },
+  ];
+  
