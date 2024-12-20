@@ -17,15 +17,40 @@ import RegisterScreen from '../screens/auth/register/registerscreen';
 import ForgotPasswordScreen from '../screens/auth/forgotpassword/forgotpasswordscreen';
 import OtpScreen from '../screens/auth/forgotpassword/otpscreen';
 import ResetPasswordScreen from '../screens/auth/forgotpassword/resetpasswordscreen';
+//import MessageNavigator from './messageNavigator';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
+
+// Stack Navigator cho Home
+function HomeStackNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="HomeScreen" component={HomeScreen} />
+      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+      <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
+      <Stack.Screen name="ChatUser" component={ChatUserScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// Stack Navigator cho Search
+function SearchStackNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="SearchScreen" component={SearchScreen} />
+      <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
+      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
+      <Stack.Screen name="ChatUser" component={ChatUserScreen} />
+    </Stack.Navigator>
+  );
+}
 
 // Stack Navigator cho Profile
 function ProfileStackNavigator({ setIsLoggedIn }) {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Profile">
+      <Stack.Screen name="ProfileScreen">
         {props => <ProfileScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
       </Stack.Screen>
       <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
@@ -36,60 +61,24 @@ function ProfileStackNavigator({ setIsLoggedIn }) {
   );
 }
 
-// Stack Navigator cho Home
-function HomeStackNavigator() {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Home" component={HomeScreen} />
-      <Stack.Screen name="PostDetail" component={PostDetailScreen} />
-      <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
-    </Stack.Navigator>
-  );
-}
-
-// Stack Navigator cho Search
-function SearchStackNavigator() {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Search" component={SearchScreen} />
-      <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
-      <Stack.Screen name="ChatUser" component={ChatUserScreen} />
-    </Stack.Navigator>
-  );
-}
-
-// Custom Add Post Button
-const AddPostButton = forwardRef(({ color }, ref) => (
-  <Icon
-    name="add"
-    size={60} // Kích thước biểu tượng
-    color={color}
-    style={{
-      position: 'absolute',
-      padding: 6,
-      bottom: 6, // Điều chỉnh khoảng cách so với tab bar
-      alignSelf: 'center', // Căn giữa theo chiều ngang
-      backgroundColor: '#ffffff', // Màu nền của nút
-      width: 72, // Kích thước vuông
-      height: 72,
-      borderRadius: 36, // Hình tròn
-      elevation: 6, // Đổ bóng trên Android
-      shadowColor: '#000', // Đổ bóng trên iOS
-      shadowOffset: { width: 0, height: 5 },
-      shadowOpacity: 0.5,
-      shadowRadius: 8,
-    }}
-    ref={ref}
-  />
-));
-
 // Tab Navigator chính
 function MainTabNavigator({ setIsLoggedIn }) {
+  // Hàm kiểm tra xem TabBar có cần hiển thị hay không
+  const shouldShowTabBar = (route) => {
+    if (!route.state) return true; // Nếu state chưa khởi tạo, hiển thị TabBar
+    const currentScreen = route.state.routes[route.state.index]?.name;
+    return (
+      (route.name === 'Home' && currentScreen === 'HomeScreen') ||
+      (route.name === 'Search' && currentScreen === 'SearchScreen') ||
+      (route.name === 'Profile' && currentScreen === 'ProfileScreen')
+    );
+  };
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarStyle: {
-          display: route.name === 'Home' && route?.state?.routes[route.state.index]?.name === 'PostDetail' ? 'none' : 'flex', // Ẩn TabBar khi ở PostDetail
+          display: shouldShowTabBar(route) ? 'flex' : 'none',
           height: 60,
           paddingTop: 10,
           paddingBottom: 6,
@@ -115,32 +104,17 @@ function MainTabNavigator({ setIsLoggedIn }) {
         headerShown: false,
       })}
     >
-      <Tab.Screen
-        name="Home"
-        component={HomeStackNavigator}
-        options={({ route }) => ({
-          tabBarStyle: {
-            display: route.state?.routes[route.state.index]?.name === 'PostDetail' ? 'none' : 'flex', // Ẩn TabBar khi ở PostDetail
-          },
-        })}
-      />
+      <Tab.Screen name="Home" component={HomeStackNavigator} />
       <Tab.Screen name="Search" component={SearchStackNavigator} />
       <Tab.Screen
         name="AddPost"
         component={AddPostScreen}
         options={{
-          tabBarIcon: ({ color }) => <AddPostButton color={color} />,
+          tabBarIcon: ({ color }) => <Icon name="add-circle" size={32} color={color} />,
         }}
       />
       <Tab.Screen name="Notifications" component={NotificationsNavigator} />
-      <Tab.Screen
-        name="Profile"
-        options={({ route }) => ({
-          tabBarStyle: {
-            display: route.state?.routes[route.state.index]?.name === 'PostDetail' ? 'none' : 'flex', // Ẩn TabBar khi ở PostDetail
-          },
-        })}
-      >
+      <Tab.Screen name="Profile">
         {props => <ProfileStackNavigator {...props} setIsLoggedIn={setIsLoggedIn} />}
       </Tab.Screen>
     </Tab.Navigator>
