@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = 'http://14.225.254.35:8080/api';
+const BASE_URL = 'http://10.0.88.20:8080/api';
 
 // Hàm lấy userId và token từ AsyncStorage
 export const getUserCredentials = async () => {

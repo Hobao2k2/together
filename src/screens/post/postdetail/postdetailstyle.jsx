@@ -16,7 +16,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 20,
     left: 5,
-    zIndex: 1,
     padding: 5,
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 20,
@@ -70,13 +69,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     fontSize: 14,
     fontWeight: 'bold',
-    zIndex: 1,
   },
   interactionContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
     marginVertical: 10,
+    marginTop: 10,
   },
   interaction: {
     flexDirection: 'row',
@@ -89,7 +88,6 @@ const styles = StyleSheet.create({
   scrollViewContainer: {
     flexGrow: 1,
     paddingBottom: 50,  // Để tránh nội dung bị che khuất khi bàn phím xuất hiện
-    zIndex: 1002,
   },
   commentsContainer: {
     flex: 1,
@@ -129,7 +127,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     borderColor: '#ccc',
-    zIndex: 10,
   },
   menupostOption: {
     flexDirection: 'row',
@@ -318,7 +315,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 4,
-    zIndex: 10,
   },
   
   menupostOption: {

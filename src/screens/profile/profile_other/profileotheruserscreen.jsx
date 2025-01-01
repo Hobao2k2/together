@@ -17,7 +17,6 @@ const { width } = Dimensions.get('window');
 
 const ProfileOtherUserScreen = ({ route, navigation}) => {
   const userIdFromRoute = route?.params?.userId;
-  console.log('Route params:', route.params);
 
   const [posts, setPosts] = useState([]);
   const [hasMorePosts, setHasMorePosts] = useState(true); 
@@ -449,9 +448,12 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
                 style={styles.messageButton}
                 onPress={() => {
                   if (currentUserId && userIdFromRoute) {
-                    navigation.navigate('ChatUser', {
-                      senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
-                      receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                    navigation.navigate('Messages', {
+                      screen: 'ChatUser', // Điều hướng đến ChatUser bên trong MessageStackNavigator
+                      params: {
+                        senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
+                        receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                      },
                     });
                   }
                 }}
@@ -510,9 +512,12 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
                 style={styles.messageButton}
                 onPress={() => {
                   if (currentUserId && userIdFromRoute) {
-                    navigation.navigate('ChatUser', {
-                      senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
-                      receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                    navigation.navigate('Messages', {
+                      screen: 'ChatUser', // Điều hướng đến ChatUser bên trong MessageStackNavigator
+                      params: {
+                        senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
+                        receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                      },
                     });
                   }
                 }}
@@ -554,9 +559,12 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
                 style={styles.messageButton}
                 onPress={() => {
                   if (currentUserId && userIdFromRoute) {
-                    navigation.navigate('ChatUser', {
-                      senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
-                      receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                    navigation.navigate('Messages', {
+                      screen: 'ChatUser', // Điều hướng đến ChatUser bên trong MessageStackNavigator
+                      params: {
+                        senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
+                        receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                      },
                     });
                   }
                 }}
@@ -587,9 +595,12 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
                   style={styles.messageButton}
                   onPress={() => {
                     if (currentUserId && userIdFromRoute) {
-                      navigation.navigate('ChatUser', {
-                        senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
-                        receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                      navigation.navigate('Messages', {
+                        screen: 'ChatUser', // Điều hướng đến ChatUser bên trong MessageStackNavigator
+                        params: {
+                          senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
+                          receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                        },
                       });
                     }
                   }}
@@ -611,9 +622,12 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
                 style={styles.messageButton}
                 onPress={() => {
                   if (currentUserId && userIdFromRoute) {
-                    navigation.navigate('ChatUser', {
-                      senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
-                      receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                    navigation.navigate('Messages', {
+                      screen: 'ChatUser', // Điều hướng đến ChatUser bên trong MessageStackNavigator
+                      params: {
+                        senderId: currentUserId,  // Gửi senderId (ID của người dùng hiện tại)
+                        receiverId: userIdFromRoute // Gửi receiverId (ID của người bạn muốn nhắn tin)
+                      },
                     });
                   }
                 }}

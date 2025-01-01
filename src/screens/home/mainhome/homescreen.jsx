@@ -90,30 +90,30 @@ const HomeScreen = () => {
   useEffect(() => {
     loadPosts();
   }, [page]);
-
-    // Hàm xử lý Like/Bỏ like bài viết
-    const handleLikeArticle = async () => {
-      try {
-        const liked = isLiked ? 0 : 1;
-        await likeArticleApi(post.user_id, post.id, liked);
-        setIsLiked(!isLiked);
-        setLikes(likes + (liked ? 1 : -1));
-        Toast.show({
-          type: 'success',
-          position: 'bottom',
-          text1: 'Thành công',
-          text2: isLiked ? 'Đã bỏ thích bài viết.' : 'Đã thích bài viết.',
-        });
-      } catch (error) {
-        console.error('Lỗi khi like bài viết:', error.message);
-        Toast.show({
-          type: 'error',
-          position: 'bottom',
-          text1: 'Lỗi',
-          text2: 'Không thể thực hiện thao tác thích bài viết.',
-        });
-      }
-    };
+  const handleLikeArticle = async (post) => {
+    try {
+      const liked = post.reaction === 1 ? 0 : 1; // Nếu reaction = 1 thì bỏ like, ngược lại là like
+      await likeArticleApi(post.user_id, post.id, liked);
+  
+      Toast.show({
+        type: 'success',
+        position: 'bottom',
+        text1: 'Thành công',
+        text2: liked ? 'Đã thích bài viết.' : 'Đã bỏ thích bài viết.',
+      });
+  
+      // Tải lại bài viết sau khi thực hiện thao tác
+      loadPosts(true);
+    } catch (error) {
+      console.error('Lỗi khi like bài viết:', error.message);
+      Toast.show({
+        type: 'error',
+        position: 'bottom',
+        text1: 'Lỗi',
+        text2: 'Không thể thực hiện thao tác thích bài viết.',
+      });
+    }
+  };  
   
   // Hàm chuyển sang màn hình chi tiết bài viết
   const handlePostPress = async (articleId, ownerId) => {
@@ -144,7 +144,6 @@ const HomeScreen = () => {
   };
 
   // Hàm render từng bài viết
-  // Hàm render từng bài viết
   const renderPost = ({ item }) => {
     const mediaData = [
       ...Array.from(new Set(item.image_article || [])).map((image) => ({
@@ -153,7 +152,10 @@ const HomeScreen = () => {
       })),
       item.video_article ? { type: 'video', url: item.video_article } : null,
     ].filter(Boolean);
-
+  
+    // Kiểm tra trạng thái bài viết đã được like
+    const isLiked = item.reaction === 1;
+  
     return (
       <TouchableOpacity onPress={() => handlePostPress(item.id, item.user_id)}>
         <View style={styles.postItemContainer}>
@@ -165,10 +167,10 @@ const HomeScreen = () => {
             />
             <Text style={[styles.usernamePost, { color: colors.text }]}>{item.username}</Text>
           </View>
-
+  
           {/* Nội dung bài viết */}
           <Text style={[styles.postContent, { color: colors.text }]}>{item.content}</Text>
-
+  
           {/* Media */}
           {mediaData.length > 0 && (
             <View style={styles.mediaContainer}>
@@ -191,22 +193,36 @@ const HomeScreen = () => {
               </Swiper>
             </View>
           )}
-
+  
           {/* Footer */}
           <View style={styles.postInteractionContainer}>
-            <TouchableOpacity style={styles.interactionButton} onPress={handleLikeArticle}>
-              <Icon name="favorite-border" size={20} color={colors.text} />
-              <Text style={[styles.interactionText, { color: colors.text }]}>{item.number_reaction} Likes</Text>
+            <TouchableOpacity
+              style={styles.interactionButton}
+              onPress={() => handleLikeArticle(item)} // Truyền bài viết hiện tại vào hàm
+            >
+              <Icon
+                name={isLiked ? 'favorite' : 'favorite-border'} // Biểu tượng thay đổi dựa trên trạng thái
+                size={20}
+                color={isLiked ? 'red' : colors.text}
+              />
+              <Text style={[styles.interactionText, { color: colors.text }]}>
+                {item.number_reaction} Likes
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.interactionButton} onPress={handlePostPress}>
+            <TouchableOpacity
+              style={styles.interactionButton}
+              onPress={() => handlePostPress(item.id, item.user_id)}
+            >
               <Icon name="chat-bubble-outline" size={20} color={colors.text} />
-              <Text style={[styles.interactionText, { color: colors.text }]}>{item.number_comment} Comments</Text>
+              <Text style={[styles.interactionText, { color: colors.text }]}>
+                {item.number_comment} Comments
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
       </TouchableOpacity>
     );
-  };
+  };  
 
   const loadMorePosts = () => {
     if (!loading && !isLastPage) {

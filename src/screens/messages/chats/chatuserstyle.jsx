@@ -29,9 +29,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#212529',
   },
+  callButton: {
+    marginLeft: 'auto', 
+    paddingHorizontal: 20,      
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   messageList: {
     flex: 1,
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
+    paddingVertical:15,
   },
   messageContainer: {
     marginVertical: 5,

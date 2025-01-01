@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getUserCredentials } from './profileapi'; 
 
 // Base URL
-const BASE_URL = "http://14.225.254.35:8080/api";
+const BASE_URL = "http://10.0.88.20:8080/api";
 
 // Hàm tiện ích để tạo header với token
 const createHeadersWithToken = async () => {
@@ -92,7 +92,7 @@ export const fetchCommentsApi = async (articleId, offset = 0, pageSize = 10) => 
     try {
         const headers = await createHeadersWithToken();
         const response = await axios.get(
-            `${BASE_URL}/comment/get-comments-article/id/${offset}/${pageSize}`,
+            `${BASE_URL}/comment/get-comments-article/${articleId}/${offset}/${pageSize}`,
             { headers }
         );
 

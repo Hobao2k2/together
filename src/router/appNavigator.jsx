@@ -11,13 +11,14 @@ import ProfileScreen from '../screens/profile/profile_loggedin/profilescreen';
 import ProfileOtherUserScreen from '../screens/profile/profile_other/profileotheruserscreen';
 import PostDetailScreen from '../screens/post/postdetail/postdetailscreen';
 import EditPostScreen from '../screens/post/editpost/editpostscreen';
+import AllChatScreen from '../screens/messages/allchats/allchatscreen';
 import ChatUserScreen from '../screens/messages/chats/chatusersreen';
+import VideoCallScreen from '../screens/messages/videocall/videocallscreen';
 import LoginScreen from '../screens/auth/login/loginscreen';
 import RegisterScreen from '../screens/auth/register/registerscreen';
 import ForgotPasswordScreen from '../screens/auth/forgotpassword/forgotpasswordscreen';
 import OtpScreen from '../screens/auth/forgotpassword/otpscreen';
 import ResetPasswordScreen from '../screens/auth/forgotpassword/resetpasswordscreen';
-//import MessageNavigator from './messageNavigator';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -29,7 +30,31 @@ function HomeStackNavigator() {
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
       <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
-      <Stack.Screen name="ChatUser" component={ChatUserScreen} />
+      <Stack.Screen name="Messages" component={MessageStackNavigator} />
+    </Stack.Navigator>
+  );
+}
+
+function MessageStackNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen
+        name="AllChats"
+        component={AllChatScreen}
+        options={{ title: 'All Chats' }}
+      />
+      <Stack.Screen
+        name="ChatUser"
+        component={ChatUserScreen}
+        options={({ route }) => ({
+          title: route.params?.receiverName || 'Chat',
+        })}
+      />
+      <Stack.Screen
+        name="VideoCall"
+        component={VideoCallScreen}
+        options={{ headerShown: false }}
+      />
     </Stack.Navigator>
   );
 }
@@ -42,6 +67,7 @@ function SearchStackNavigator() {
       <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
       <Stack.Screen name="ChatUser" component={ChatUserScreen} />
+      <Stack.Screen name="VideoCall" component={VideoCallScreen} />
     </Stack.Navigator>
   );
 }
@@ -55,6 +81,7 @@ function ProfileStackNavigator({ setIsLoggedIn }) {
       </Stack.Screen>
       <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
       <Stack.Screen name="ChatUser" component={ChatUserScreen} />
+      <Stack.Screen name="VideoCall" component={VideoCallScreen} />
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
       <Stack.Screen name="EditPost" component={EditPostScreen} />
     </Stack.Navigator>

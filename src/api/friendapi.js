@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { getUserCredentials } from './profileapi'; 
 
-const BASE_URL = 'http://14.225.254.35:8080/api';
+const BASE_URL = 'http://10.0.88.20:8080/api';
 
 // Hàm tiện ích để tạo header với token
 const createHeadersWithToken = async () => {

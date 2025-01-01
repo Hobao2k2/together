@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, TextInput, TouchableOpacity, Text, FlatList, Image, useColorScheme } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { colorStyles } from '../../../styles/colorScheme'; 
+import { colorStyles } from '../../../styles/colorScheme'; // Thay thế bằng file màu của bạn
 import socketServices from '../../../api/WSService';
 import { getOtherUserInfoApi } from '../../../api/profileapi';
 import styles from './chatuserstyle';
@@ -174,40 +174,6 @@ const ChatUserScreen = ({ route, navigation }) => {
             </Text>
           </View>
         )}
-        <TouchableOpacity
-          style={[styles.callButton, { marginLeft: 'auto' }]} // Căn sang bên phải
-          onPress={() => {
-            if (!receiverInfo) {
-              console.error('Thông tin người nhận không khả dụng.');
-              return;
-            }
-
-            const callData = {
-              callerId: senderId,
-              receiverId: receiverId,
-              hash: `${senderId}-${receiverId}`,
-              callerName: receiverInfo.username || 'Unknown Caller',
-            };
-
-            // Gửi tín hiệu khởi tạo cuộc gọi
-            socketServices.emit('call', callData);
-
-            navigation.navigate('Messages', {
-              screen: 'VideoCall',
-              params: {
-                callData: {
-                  callerId: senderId,
-                  receiverId: receiverId,
-                  callerName: receiverInfo?.username || 'Unknown Caller',
-                  avatarPath: receiverInfo?.avatar_path || '', // Đảm bảo avatar_path có giá trị
-                },
-                isCaller: true,
-              },
-            });
-          }}
-        >
-          <Icon name="videocam-outline" size={36} color={colors.text} />
-        </TouchableOpacity>
       </View>
       <FlatList
           ref={flatListRef}

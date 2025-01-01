@@ -3,7 +3,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, TextInput, Image, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity, Modal } from 'react-native';
 import Video from 'react-native-video';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useNavigation } from '@react-navigation/native';
 import { getUserCredentials } from '../../../api/profileapi';
 import Swiper from 'react-native-swiper';
 import { fetchPostDetail } from '../../../api/postapi';
@@ -126,35 +125,27 @@ const PostDetailScreen = ({ route, navigation }) => {
         return;
       }
   
-      // Đảo trạng thái like
-      const newReaction = reaction === 0 ? 1 : 0;
+      const newReaction = reaction === 0 ? 1 : 0; // Đảo trạng thái
+      await likeArticleApi(userId, articleId, newReaction); // Gửi API cập nhật like
   
-      // Gọi API cập nhật like
-      const response = await likeArticleApi(userId, articleId, newReaction);
-  
-      // Log phản hồi từ API
-      console.log('Phản hồi từ API sau khi like/bỏ like:', response);
-  
-      // Cập nhật trạng thái cục bộ
-      setReaction(newReaction);
+      setReaction(newReaction); // Cập nhật trạng thái like
       setLikes((prevLikes) => prevLikes + (newReaction === 1 ? 1 : -1)); // Cập nhật số lượt like
-  
-      // Thông báo thành công
       Toast.show({
         type: 'success',
         text1: 'Thành công',
         text2: newReaction === 1 ? 'Đã thích bài viết.' : 'Đã bỏ thích bài viết.',
       });
     } catch (error) {
-      console.error('Lỗi khi like/bỏ like bài viết:', error.message);
+      console.error('Lỗi khi like bài viết:', error.message);
       Toast.show({
         type: 'error',
         text1: 'Lỗi',
         text2: 'Không thể thực hiện thao tác thích bài viết.',
       });
     }
+    fetchPostData();
   };  
-  
+
   // Hàm đăng bình luận
   const handlePostComment = async () => {
     // Kiểm tra nếu ô nhập liệu rỗng
