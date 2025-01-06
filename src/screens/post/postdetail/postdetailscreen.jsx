@@ -3,7 +3,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, TextInput, Image, ScrollView, ActivityIndicator, Dimensions, TouchableOpacity, Modal } from 'react-native';
 import Video from 'react-native-video';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useNavigation } from '@react-navigation/native';
 import { getUserCredentials } from '../../../api/profileapi';
 import Swiper from 'react-native-swiper';
 import { fetchPostDetail } from '../../../api/postapi';
@@ -29,6 +28,8 @@ const PostDetailScreen = ({ route, navigation }) => {
   const [newComment, setNewComment] = useState('');
   const [replyToCommentId, setReplyToCommentId] = useState(null);
   const [visibleChildComments, setVisibleChildComments] = useState({});
+  const [visibleMenuId, setVisibleMenuId] = useState(null);
+
 
   const [isLiked, setIsLiked] = useState(false);
   const [reaction, setReaction] = useState(0); 
@@ -155,9 +156,7 @@ const PostDetailScreen = ({ route, navigation }) => {
     }
   };  
   
-  // Hàm đăng bình luận
   const handlePostComment = async () => {
-    // Kiểm tra nếu ô nhập liệu rỗng
     if (!newComment.trim()) {
       Toast.show({
         type: 'info',
@@ -168,7 +167,7 @@ const PostDetailScreen = ({ route, navigation }) => {
     }
   
     try {
-      const { userId } = await getUserCredentials(); // Lấy thông tin người dùng
+      const { userId } = await getUserCredentials();
       if (!userId) {
         Toast.show({
           type: 'error',
@@ -185,47 +184,42 @@ const PostDetailScreen = ({ route, navigation }) => {
       };
   
       if (replyToCommentId) {
-        // Nếu có bình luận cha (parent), truyền parent_comment_id
         data.parent_comment_id = replyToCommentId;
       }
   
-      const response = await postCommentApi(data.article_id, data.content, data.user_id, data.parent_comment_id); // Gửi bình luận
-      if (response.success) {
-        const newCommentObj = response.data;
-        setComments((prevComments) => {
-          if (newCommentObj.parent_comment_id) {
-            // Thêm bình luận con vào đúng vị trí bình luận cha
-            return prevComments.map(comment => {
-              if (comment.comment_id === newCommentObj.parent_comment_id) {
-                comment.child_comments = comment.child_comments
-                  ? [...comment.child_comments, newCommentObj]
-                  : [newCommentObj];
-              }
-              return comment;
-            });
-          } else {
-            // Bình luận mới là bình luận cha
-            return [...prevComments, newCommentObj];
-          }
-        });
-        setNewComment(''); // Reset ô nhập liệu
-        setReplyToCommentId(null); // Reset trạng thái trả lời
+      console.log("comment log:", data);
+  
+      const response = await postCommentApi(data.article_id, data.content, data.user_id, data.parent_comment_id);
+      console.log("API Response:", response);
+  
+      if (response.code === 1000) {
         Toast.show({
           type: 'success',
           text1: 'Thành công',
           text2: 'Bình luận đã được đăng.',
         });
+  
+        setNewComment('');
+        setReplyToCommentId(null);
+  
+        // Gọi lại fetchComments để cập nhật danh sách
+        fetchComments(true);
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Lỗi',
+          text2: response.result || 'Không thể đăng bình luận. Vui lòng thử lại sau!',
+        });
       }
     } catch (error) {
-      console.error('Lỗi khi đăng bình luận:', error.message);
+      console.error("Lỗi khi đăng bình luận:", error.message);
       Toast.show({
         type: 'error',
         text1: 'Lỗi',
         text2: 'Không thể đăng bình luận. Vui lòng thử lại sau!',
       });
     }
-    fetchComments()
-  };  
+  };    
 
   const handleReplyClick = (commentId) => {
     // Lưu commentId vào replyToCommentId khi người dùng bấm "Trả lời"
@@ -263,7 +257,7 @@ const PostDetailScreen = ({ route, navigation }) => {
         text1: 'Thành công',
         text2: 'Bình luận đã được sửa.',
       });
-      fetchComments()
+      fetchComments(true);
     } catch (error) {
       console.error('Lỗi khi sửa bình luận:', error.message);
       Toast.show({
@@ -295,7 +289,7 @@ const PostDetailScreen = ({ route, navigation }) => {
         text1: 'Thành công',
         text2: 'Bình luận đã được xóa.',
       });
-      fetchComments()
+      fetchComments(true);
     } catch (error) {
       console.error('Lỗi khi xóa bình luận:', error.message);
       Toast.show({
@@ -347,8 +341,12 @@ const PostDetailScreen = ({ route, navigation }) => {
 
   // Hàm xử lý mở/đóng menu cho bình luận
   const handleToggleMenu = (commentId) => {
-    setActiveMenuCommentId(prevId => (prevId === commentId ? null : commentId));
-  };
+    if (visibleMenuId === commentId) {
+      setVisibleMenuId(null); // Ẩn menu nếu đã mở
+    } else {
+      setVisibleMenuId(commentId); // Hiển thị menu
+    }
+  };  
 
   // Modal chỉnh sửa bình luận
   const openEditModal = (comment) => {
@@ -362,7 +360,7 @@ const PostDetailScreen = ({ route, navigation }) => {
     setCommentToDelete(comment);
     setIsDeleteModalVisible(true);
   };
-
+  
   if (!postDetail) {
     return (
       <View style={styles.loadingContainer}>
@@ -472,15 +470,44 @@ const PostDetailScreen = ({ route, navigation }) => {
               </TouchableOpacity>
 
               <View style={styles.usernameMenuContainer}>
-                <TouchableOpacity onPress={() => handleNavigateToProfile(comment.user_id)}>
-                  <Text style={styles.commentUsername}>{comment.username}</Text>
-                </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleNavigateToProfile(comment.user_id)}>
+            <Text style={styles.commentUsername}>{comment.username}</Text>
+          </TouchableOpacity>
 
-                <TouchableOpacity style={styles.menuButton} onPress={() => handleToggleMenu(comment.comment_id)}>
-                  <Icon name="more-vert" size={24} color="#333" />
-                </TouchableOpacity>
-              </View>
-            </View>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() => handleToggleMenu(comment.comment_id)}
+          >
+            <Icon name="more-vert" size={24} color="#333" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Menu Sửa/Xóa */}
+      {visibleMenuId === comment.comment_id && (
+        <View style={styles.menuContainer}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              handleToggleMenu(null); // Đóng menu
+              openEditModal(comment);
+            }}
+          >
+            <Icon name="edit" size={24} color="#4a90e2" />
+            <Text style={styles.menuText}>Sửa</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => {
+              handleToggleMenu(null); // Đóng menu
+              openDeleteModal(comment);
+            }}
+          >
+            <Icon name="delete" size={24} color="#e74c3c" />
+            <Text style={styles.menuText}>Xóa</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
             {/* Nội dung bình luận */}
             <View style={styles.commentTextContainer}>

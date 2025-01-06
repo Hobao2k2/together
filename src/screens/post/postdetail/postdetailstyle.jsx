@@ -89,6 +89,33 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 50,  // Để tránh nội dung bị che khuất khi bàn phím xuất hiện
   },
+  menuContainer: {
+    position: 'absolute',
+    top: 5, // Điều chỉnh vị trí menu gần nút bấm
+    right: '30%',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  menuItem: {
+    flexDirection: 'row', // Đặt icon và text trên cùng một hàng
+    alignItems: 'center', // Căn giữa icon và text theo chiều dọc
+    paddingVertical: 5, // Giảm padding
+    paddingHorizontal: 8, // Giảm padding
+    justifyContent: 'flex-start', // Đảm bảo các phần tử căn trái
+  },
+  menuText: {
+    marginLeft: 8, // Khoảng cách giữa icon và text
+    fontSize: 16,
+    color: '#333',
+  },
   commentsContainer: {
     flex: 1,
     marginTop: 20,
@@ -252,50 +279,74 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   // Modal Styles
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Lớp nền mờ
-  },
-  
-  modalContent: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    width: width - 40, // Đặt chiều rộng cho modal
-    alignItems: 'center',
-  },
-  
-  modalInput: {
-    width: '100%',
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    borderRadius: 5,
-    marginBottom: 20,
-    paddingLeft: 10,
-  },
-  
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '100%',
-  },
-  
-  modalButton: {
-    backgroundColor: '#007BFF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    marginHorizontal: 10,
-  },
-  
-  modalButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+modalOverlay: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: 'rgba(0, 0, 0, 0.5)', // Lớp nền mờ
+  paddingHorizontal: 20,
+},
+
+modalContent: {
+  backgroundColor: '#fff',
+  padding: 25,
+  borderRadius: 12, // Thêm góc bo tròn mềm mại
+  width: '90%', // Sử dụng phần trăm để modal phản hồi với các kích thước màn hình khác nhau
+  maxWidth: 400, // Giới hạn chiều rộng tối đa để không quá rộng trên màn hình lớn
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.3,
+  shadowRadius: 4,
+  elevation: 5, // Tạo hiệu ứng đổ bóng cho modal
+},
+
+modalInput: {
+  width: '100%',
+  height: 45,
+  borderColor: '#ccc',
+  borderWidth: 1,
+  borderRadius: 8, // Tăng độ bo góc của ô nhập liệu
+  marginBottom: 20,
+  paddingLeft: 15, // Tăng khoảng cách chữ khỏi viền
+  fontSize: 16, // Thay đổi kích thước chữ cho dễ nhìn
+  color: '#333', // Thêm màu chữ để dễ đọc hơn
+},
+
+modalButtons: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  width: '100%',
+  marginTop: 15, // Thêm khoảng cách giữa phần nội dung và các nút
+},
+
+modalButton: {
+  backgroundColor: '#FFA500', // Màu cam cho nền
+  paddingVertical: 12,
+  paddingHorizontal: 25,
+  borderRadius: 8,
+  marginHorizontal: 5,
+  justifyContent: 'center',
+  alignItems: 'center',
+  minWidth: 120, // Đảm bảo nút đủ rộng cho text
+},
+
+modalButtonText: {
+  color: '#fff', // Màu trắng cho chữ
+  fontSize: 16,
+  fontWeight: '600', // Độ đậm chữ
+},
+
+cancelButton: {
+  backgroundColor: '#ccc', // Màu xám nhạt cho nút hủy
+},
+
+updateButton: {
+  backgroundColor: '#4CAF50', // Màu xanh lá cho nút cập nhật
+},
+
+deleteButton: {
+  backgroundColor: '#e74c3c', // Màu đỏ cho nút xóa
+},
   
   // Menu Button (Nút chỉnh sửa/xóa)
   menuButton: {
