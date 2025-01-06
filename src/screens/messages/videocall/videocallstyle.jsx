@@ -5,28 +5,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#000', // Nền đen cho giao diện video call
   },
-  incomingCallContainer: {
+  backgroundVideo: {
+    ...StyleSheet.absoluteFillObject, // Video nền bao phủ toàn màn hình
+    zIndex: -1, // Đặt video nền ở phía sau
+  },
+  overlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    zIndex: 1, // Lớp phủ hiển thị phía trên
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Hiệu ứng mờ để làm nổi bật nội dung
     padding: 20,
-    backgroundColor: '#fff',
-    borderRadius: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  callingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  videoContainer: {
-    flex: 1,
-    position: 'relative',
   },
   avatar: {
     width: 100,
@@ -39,7 +28,7 @@ const styles = StyleSheet.create({
   incomingCallText: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#fff',
     marginBottom: 20,
     textAlign: 'center',
   },
@@ -63,8 +52,8 @@ const styles = StyleSheet.create({
   },
   localVideo: {
     position: 'absolute',
-    top: 20,
-    right: 20,
+    top: 10,
+    right: 10,
     width: 120,
     height: 160,
     borderRadius: 10,
@@ -80,34 +69,32 @@ const styles = StyleSheet.create({
   circularButton: {
     justifyContent: 'center',
     alignItems: 'center',
-    width: 70,
-    height: 70,
-    borderRadius: 35, // Hình tròn
-    backgroundColor: '#28a745', // Màu mặc định cho nút
+    width: 60,
+    height: 60,
+    borderRadius: 30, // Hình tròn
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3.84,
     elevation: 4,
-    marginBottom: 10, // Khoảng cách giữa biểu tượng và văn bản bên dưới
   },
   acceptButton: {
-    backgroundColor: '#28a745', // Màu xanh lá cho nút chấp nhận
+    backgroundColor: '#4CAF50', // Màu xanh lá cho nút chấp nhận
   },
   rejectButton: {
-    backgroundColor: '#dc3545', // Màu đỏ cho nút từ chối
+    backgroundColor: '#F44336', // Màu đỏ cho nút từ chối
   },
   endCallButton: {
-    backgroundColor: '#dc3545', // Màu đỏ cho nút kết thúc
-    position: 'absolute',
-    bottom: 30,
-    alignSelf: 'center',
+    backgroundColor: '#F44336', // Màu đỏ cho nút kết thúc
+    marginTop: 20,
+    padding: 15,
+    borderRadius: 30,
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-    textAlign: 'center',
+  backButton: {
+    backgroundColor: '#007BFF', // Màu xanh dương cho nút quay lại
+    padding: 15,
+    borderRadius: 30,
+    marginTop: 20,
   },
 });
 
