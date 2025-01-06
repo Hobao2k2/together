@@ -379,23 +379,26 @@ const styles = StyleSheet.create({
     marginLeft: 5,
     marginVertical: 10,
   },
+  mediaContainer: {
+    height: width * 0.56, // Tỷ lệ 16:9 dựa trên chiều rộng màn hình
+    marginBottom: 10,
+    borderRadius: 10,
+    overflow: 'hidden',
+  },  
   mediaWrapper: {
-    marginVertical: 10,
-    width: '100%', 
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   postImage: {
-    width: '90%', 
-    height: 300,
-    borderRadius: 10,
+    width: '100%',
+    height: '100%',
     resizeMode: 'cover',
-    alignSelf: 'center', 
+    borderRadius: 10,
   },
   postVideo: {
-    width: '90%', 
-    height: 300,
-    backgroundColor: '#000',
-    borderRadius: 10,
-    alignSelf: 'center', 
+    width: '100%',
+    height: '100%',
   },
   postInteractionContainer: {
     flexDirection: 'row',
@@ -414,6 +417,11 @@ const styles = StyleSheet.create({
   interactionButton: {
     flexDirection: 'row',
   }, 
+  interactionText: {
+    fontSize: 14,
+    color: '#333',
+    marginLeft: 5,
+  },
   menuButton: {
     marginHorizontal: 5,
   },

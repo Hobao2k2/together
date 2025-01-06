@@ -25,22 +25,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#333',
   },
-
-  // // Post Container
-  // postItemContainer: {
-  //   marginTop: 20,
-  //   backgroundColor: '#fff',
-  //   borderRadius: 12,
-  //   marginBottom: 10,
-  //   padding: 12,
-  //   shadowColor: '#000',
-  //   shadowOpacity: 0.1,
-  //   shadowOffset: { width: 0, height: 2 },
-  //   shadowRadius: 4,
-  //   width: width * 0.9,
-  //   alignSelf: 'center',
-  //   elevation: 3,
-  // },
   postItemContainer: {
     marginVertical: 10, // Khoảng cách giữa các bài viết
     marginHorizontal: 15, // Khoảng cách hai bên
