@@ -18,42 +18,39 @@ const ChatUserScreen = ({ route, navigation }) => {
   const flatListRef = React.useRef(null);
 
   useEffect(() => {
-    const initializeSocket = async () => {
-      await socketServices.initializeSocket();
-      const hash = maHoa(senderId, receiverId);
+    const hash = maHoa(senderId, receiverId);
 
-      // Lắng nghe sự kiện tin nhắn mới
-      socketServices.on(`send_${hash}`, (message) => {
-        const updatedMessage = {
-          ...message,
-          sent_at: new Date(message.sent_at), // Chuyển thành đối tượng Date
-        };
-      
-        setMessages((prevMessages) => {
-          const existingMessageIds = new Set(prevMessages.map((msg) => msg.id));
-          if (!existingMessageIds.has(updatedMessage.id)) {
-            const updatedMessages = [...prevMessages, updatedMessage].sort(sortByTime);
-            return updatedMessages;
-          }
-          return prevMessages;
-        });
-      
-        // Cuộn đến tin nhắn cuối
-        flatListRef.current?.scrollToEnd({ animated: true });
-      });      
-    };
+    // Lắng nghe sự kiện tin nhắn mới
+    socketServices.on(`send_${hash}`, (message) => {
+      const updatedMessage = {
+        ...message,
+        sent_at: new Date(message.sent_at), // Chuyển thành đối tượng Date
+      };
+
+      setMessages((prevMessages) => {
+        const existingMessageIds = new Set(prevMessages.map((msg) => msg.id));
+        if (!existingMessageIds.has(updatedMessage.id)) {
+          const updatedMessages = [...prevMessages, updatedMessage].sort(sortByTime);
+          return updatedMessages;
+        }
+        return prevMessages;
+      });
+
+      // Cuộn đến tin nhắn cuối
+      flatListRef.current?.scrollToEnd({ animated: true });
+    });
 
     const fetchChatHistory = async () => {
       try {
         const response = await axios.get(
           `http://10.0.88.20:9001/detail-chat/${senderId}/${receiverId}`
         );
-    
+
         const updatedMessages = response.data.map((message) => ({
           ...message,
           sent_at: new Date(message.sent_at), // Chuyển đổi sang đối tượng Date
         }));
-    
+
         setMessages((prevMessages) => {
           const existingMessageIds = new Set(prevMessages.map((msg) => msg.id)); // Dựa vào ID hoặc unique field
           const newMessages = updatedMessages.filter((msg) => !existingMessageIds.has(msg.id));
@@ -63,9 +60,6 @@ const ChatUserScreen = ({ route, navigation }) => {
         console.error('Lỗi khi lấy lịch sử tin nhắn:', error);
       }
     };
-        
-
-    const sortByTime = (a, b) => new Date(a.sent_at) - new Date(b.sent_at);
 
     const fetchReceiverInfo = async () => {
       try {
@@ -76,12 +70,11 @@ const ChatUserScreen = ({ route, navigation }) => {
       }
     };
 
-    initializeSocket();
     fetchChatHistory();
     fetchReceiverInfo();
 
     return () => {
-      socketServices.socket?.disconnect();
+      socketServices.off(`send_${hash}`);
     };
   }, [senderId, receiverId]);
 
@@ -100,7 +93,6 @@ const ChatUserScreen = ({ route, navigation }) => {
 
   const getCurrentTime = () => {
     const now = new Date();
-  
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const day = String(now.getDate()).padStart(2, '0');
@@ -108,10 +100,8 @@ const ChatUserScreen = ({ route, navigation }) => {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
     const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
-  
-    // MySQL format: YYYY-MM-DD HH:mm:ss.SSS
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
-  };    
+  };
 
   const sendMessage = () => {
     if (!messageText.trim()) return;
@@ -139,7 +129,7 @@ const ChatUserScreen = ({ route, navigation }) => {
   const renderMessageItem = ({ item }) => {
     const isMyMessage = item.sender_id === senderId;
     const timestamp = new Date(item.sent_at).toLocaleTimeString(); // Hiển thị thời gian
-  
+
     return (
       <View
         style={[
@@ -151,11 +141,11 @@ const ChatUserScreen = ({ route, navigation }) => {
         <Text style={styles.timestamp}>{timestamp}</Text>
       </View>
     );
-  };  
+  };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}> 
-      <View style={[styles.header, { borderBottomColor: colors.border }]}> 
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { borderBottomColor: colors.border }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
@@ -175,34 +165,20 @@ const ChatUserScreen = ({ route, navigation }) => {
           </View>
         )}
         <TouchableOpacity
-          style={[styles.callButton, { marginLeft: 'auto' }]} // Căn sang bên phải
+          style={[styles.callButton, { marginLeft: 'auto' }]}
           onPress={() => {
-            if (!receiverInfo) {
-              console.error('Thông tin người nhận không khả dụng.');
-              return;
-            }
-
             const callData = {
               callerId: senderId,
               receiverId: receiverId,
               hash: `${senderId}-${receiverId}`,
-              callerName: receiverInfo.username || 'Unknown Caller',
+              callerName: receiverInfo?.username || 'Unknown Caller',
+              avatarPath: receiverInfo?.avatar_path || '',
             };
 
-            // Gửi tín hiệu khởi tạo cuộc gọi
             socketServices.emit('call', callData);
-
             navigation.navigate('Messages', {
               screen: 'VideoCall',
-              params: {
-                callData: {
-                  callerId: senderId,
-                  receiverId: receiverId,
-                  callerName: receiverInfo?.username || 'Unknown Caller',
-                  avatarPath: receiverInfo?.avatar_path || '', // Đảm bảo avatar_path có giá trị
-                },
-                isCaller: true,
-              },
+              params: { callData, isCaller: true },
             });
           }}
         >
@@ -210,15 +186,15 @@ const ChatUserScreen = ({ route, navigation }) => {
         </TouchableOpacity>
       </View>
       <FlatList
-          ref={flatListRef}
-          data={messages}
-          renderItem={renderMessageItem}
-          keyExtractor={(item, index) => index.toString()}
-          style={styles.messageList}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
-          onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
-        />
-      <View style={[styles.inputContainer, { borderColor: colors.border }]}> 
+        ref={flatListRef}
+        data={messages}
+        renderItem={renderMessageItem}
+        keyExtractor={(item, index) => index.toString()}
+        style={styles.messageList}
+        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+        onLayout={() => flatListRef.current?.scrollToEnd({ animated: true })}
+      />
+      <View style={[styles.inputContainer, { borderColor: colors.border }]}>
         <TextInput
           style={[styles.input, { color: colors.text }]}
           placeholder="Nhập tin nhắn..."
