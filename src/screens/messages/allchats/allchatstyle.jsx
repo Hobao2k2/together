@@ -3,41 +3,59 @@ import { StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
-  conversationList: {
-    paddingVertical: 10,
+  headerContainer: {
+    marginBottom: 16,
   },
-  conversationItem: {
+  header: {
+    fontSize: 24,
+    marginTop: 20,
+    fontWeight: 'bold',
+  },
+  chatItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    marginVertical: 8,
+    borderRadius: 10, // Bo góc các mục
+    borderWidth: 1, // Viền để làm nổi khối
+    shadowColor: '#000', // Bóng đổ (shadow)
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1, // Độ mờ của bóng
+    shadowRadius: 4, // Độ lan của bóng
+    elevation: 3, // Độ nổi (chỉ áp dụng trên Android)
   },
   avatar: {
     width: 50,
     height: 50,
-    borderRadius: 25,
-    marginRight: 15,
+    borderRadius: 25, // Avatar tròn
+    marginRight: 12,
   },
-  conversationDetails: {
+  chatDetails: {
     flex: 1,
+    justifyContent: 'center',
   },
-  username: {
-    fontSize: 16,
+  userName: {
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 4,
+    fontSize: 16,
   },
-  lastMessage: {
+  message: {
     fontSize: 14,
-    color: '#666',
+    marginTop: 4,
   },
-  timestamp: {
-    fontSize: 12,
-    color: '#aaa',
+  loader: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
   },
 });
 
