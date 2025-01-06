@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import AppNavigator from './src/router/appNavigator';
 import Toast, { BaseToast, ErrorToast } from 'react-native-toast-message';
 import { LogBox } from 'react-native';
+import socketService from './src/api/WSService'; // Đảm bảo đường dẫn đúng với file WSService.js
 
 LogBox.ignoreAllLogs();
 
@@ -13,11 +14,11 @@ const toastConfig = {
       {...props}
       style={{
         borderLeftColor: 'green',
-        backgroundColor: '#e6ffe6', // Nền nhạt cho success
+        backgroundColor: '#e6ffe6',
         borderRadius: 8,
         marginHorizontal: 10,
-        elevation: 5, // Bóng trên Android
-        shadowColor: '#000', // Bóng trên iOS
+        elevation: 5,
+        shadowColor: '#000',
         shadowOpacity: 0.2,
         shadowRadius: 4,
         shadowOffset: { width: 0, height: 2 },
@@ -38,11 +39,11 @@ const toastConfig = {
       {...props}
       style={{
         borderLeftColor: 'red',
-        backgroundColor: '#ffe6e6', // Nền nhạt cho error
+        backgroundColor: '#ffe6e6',
         borderRadius: 8,
         marginHorizontal: 10,
-        elevation: 5, // Bóng trên Android
-        shadowColor: '#000', // Bóng trên iOS
+        elevation: 5,
+        shadowColor: '#000',
         shadowOpacity: 0.2,
         shadowRadius: 4,
         shadowOffset: { width: 0, height: 2 },
@@ -61,6 +62,20 @@ const toastConfig = {
 };
 
 export default function App() {
+  useEffect(() => {
+    // Khởi tạo kết nối WebSocket khi ứng dụng mở
+    const initializeSocket = async () => {
+      await socketService.initializeSocket();
+    };
+
+    initializeSocket();
+
+    // Đảm bảo ngắt kết nối khi ứng dụng đóng
+    return () => {
+      socketService.disconnect();
+    };
+  }, []);
+
   return (
     <NavigationContainer>
       <AppNavigator />
