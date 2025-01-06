@@ -66,8 +66,7 @@ function SearchStackNavigator() {
       <Stack.Screen name="SearchScreen" component={SearchScreen} />
       <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
-      <Stack.Screen name="ChatUser" component={ChatUserScreen} />
-      <Stack.Screen name="VideoCall" component={VideoCallScreen} />
+      <Stack.Screen name="Messages" component={MessageStackNavigator} />
     </Stack.Navigator>
   );
 }
@@ -80,8 +79,7 @@ function ProfileStackNavigator({ setIsLoggedIn }) {
         {props => <ProfileScreen {...props} setIsLoggedIn={setIsLoggedIn} />}
       </Stack.Screen>
       <Stack.Screen name="ProfileOtherUser" component={ProfileOtherUserScreen} />
-      <Stack.Screen name="ChatUser" component={ChatUserScreen} />
-      <Stack.Screen name="VideoCall" component={VideoCallScreen} />
+      <Stack.Screen name="Messages" component={MessageStackNavigator} />
       <Stack.Screen name="PostDetail" component={PostDetailScreen} />
       <Stack.Screen name="EditPost" component={EditPostScreen} />
     </Stack.Navigator>
@@ -107,8 +105,8 @@ function MainTabNavigator({ setIsLoggedIn }) {
         tabBarStyle: {
           display: shouldShowTabBar(route) ? 'flex' : 'none',
           height: 60,
-          paddingTop: 10,
-          paddingBottom: 6,
+          paddingTop: 8,
+          paddingBottom: 10,
           borderTopWidth: 2,
           borderTopColor: '#e0e0e0',
         },
@@ -137,7 +135,7 @@ function MainTabNavigator({ setIsLoggedIn }) {
         name="AddPost"
         component={AddPostScreen}
         options={{
-          tabBarIcon: ({ color }) => <Icon name="add-circle" size={32} color={color} />,
+          tabBarIcon: ({ color }) => <Icon name="add-circle" size={30} color={color} />,
         }}
       />
       <Tab.Screen name="Notifications" component={NotificationsNavigator} />
