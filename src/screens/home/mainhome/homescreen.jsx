@@ -3,6 +3,7 @@ import { View, Text, Image, FlatList, ActivityIndicator, TouchableOpacity, Refre
 import { fetchPosts, fetchPostDetail } from '../../../api/postapi';
 import { getUserInfoApi } from '../../../api/profileapi';
 import { likeArticleApi } from '../../../api/comment&like';
+import { getUserCredentials } from '../../../api/profileapi';
 import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -90,10 +91,15 @@ const HomeScreen = () => {
   useEffect(() => {
     loadPosts();
   }, [page]);
+
   const handleLikeArticle = async (post) => {
+
+    const { userId } = await getUserCredentials();
+
     try {
       const liked = post.reaction === 1 ? 0 : 1; // Nếu reaction = 1 thì bỏ like, ngược lại là like
-      await likeArticleApi(post.user_id, post.id, liked);
+      await likeArticleApi(userId, post.id, liked);
+      console.log(userId);
   
       Toast.show({
         type: 'success',
@@ -235,7 +241,9 @@ const HomeScreen = () => {
   };
 
   const handleNavigateToMessages = () => {
-    navigation.navigate('Messages');
+    navigation.navigate('Messages', {
+      screen: 'AllChats', 
+    });
   };
 
   return (
