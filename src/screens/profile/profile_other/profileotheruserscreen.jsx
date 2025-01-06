@@ -464,7 +464,7 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
                       <Video
                         source={{ uri: media.url }}
                         style={styles.postVideo}
-                        paused={playingVideoId !== media.key}
+                        paused={true}
                         onLoadStart={() => setPlayingVideoId(media.key)}
                         resizeMode="cover"
                         controls

@@ -189,9 +189,9 @@ const HomeScreen = () => {
                       <Video
                         source={{ uri: media.url }}
                         style={styles.postVideo}
-                        paused
-                        resizeMode="cover"
                         controls
+                        resizeMode="cover"
+                        paused={true}
                       />
                     )}
                   </View>
