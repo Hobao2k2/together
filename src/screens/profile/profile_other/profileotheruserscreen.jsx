@@ -5,6 +5,8 @@ import LinearGradient from 'react-native-linear-gradient';
 import { getOtherUserInfoApi } from '../../../api/profileapi';
 import { fetchPostDetail, getOtherUserPostsApi } from '../../../api/postapi';
 import { checkRelationshipApi, sendFriendRequestApi, acceptFriendRequestApi, rejectFriendRequestApi, blockUserApi, unfriendUserApi } from '../../../api/friendapi'; 
+import { likeArticleApi } from '../../../api/comment&like';
+import { getUserCredentials } from '../../../api/profileapi';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Swiper from 'react-native-swiper';
 import Toast from 'react-native-toast-message';
@@ -174,7 +176,6 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
       setRelationshipStatus('pending'); // Cập nhật trạng thái thành "đang chờ"
       Toast.show({
         type: 'success',
-        position: 'bottom',
         text1: 'Thành công',
         text2: 'Yêu cầu kết bạn đã được gửi.',
       });
@@ -182,7 +183,6 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
       console.error('Lỗi khi gửi yêu cầu kết bạn:', error);
       Toast.show({
         type: 'error',
-        position: 'bottom',
         text1: 'Lỗi',
         text2: 'Không thể gửi yêu cầu kết bạn.',
       });
@@ -199,7 +199,6 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
       setRelationshipStatus('friends'); // Cập nhật trạng thái thành bạn bè
       Toast.show({
         type: 'success',
-        position: 'bottom',
         text1: 'Thành công',
         text2: 'Bạn đã chấp nhận lời mời kết bạn.',
       });
@@ -207,7 +206,6 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
       console.error('Lỗi khi chấp nhận kết bạn:', error);
       Toast.show({
         type: 'error',
-        position: 'bottom',
         text1: 'Lỗi',
         text2: 'Không thể chấp nhận lời mời kết bạn.',
       });
@@ -222,7 +220,6 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
       setRelationshipStatus('not_friends'); // Cập nhật trạng thái thành không bạn bè
       Toast.show({
         type: 'success',
-        position: 'bottom',
         text1: 'Thành công',
         text2: 'Bạn đã từ chối lời mời kết bạn.',
       });
@@ -230,7 +227,6 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
       console.error('Lỗi khi từ chối kết bạn:', error);
       Toast.show({
         type: 'error',
-        position: 'bottom',
         text1: 'Lỗi',
         text2: 'Không thể từ chối lời mời kết bạn.',
       });
@@ -245,7 +241,6 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
       setRelationshipStatus('not_friends'); // Cập nhật trạng thái thành không bạn bè
       Toast.show({
         type: 'success',
-        position: 'bottom',
         text1: 'Thành công',
         text2: 'Bạn đã hủy kết bạn.',
       });
@@ -253,7 +248,6 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
       console.error('Lỗi khi hủy kết bạn:', error);
       Toast.show({
         type: 'error',
-        position: 'bottom',
         text1: 'Lỗi',
         text2: 'Không thể hủy kết bạn.',
       });
@@ -268,7 +262,6 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
       setRelationshipStatus('blocked_by_sender'); // Cập nhật trạng thái thành "đã block"
       Toast.show({
         type: 'success',
-        position: 'bottom',
         text1: 'Thành công',
         text2: 'Tài khoản đã bị chặn.',
       });
@@ -276,7 +269,6 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
       console.error('Lỗi khi chặn tài khoản:', error);
       Toast.show({
         type: 'error',
-        position: 'bottom',
         text1: 'Lỗi',
         text2: 'Không thể chặn tài khoản.',
       });
@@ -294,7 +286,6 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
       } else {
         Toast.show({
           type: 'error',
-          position: 'bottom',
           text1: 'Lỗi',
           text2: articleDetail.error,
         });
@@ -303,12 +294,55 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
       console.error('Lỗi khi lấy chi tiết bài viết:', error);
       Toast.show({
         type: 'error',
-        position: 'bottom',
         text1: 'Lỗi',
         text2: 'Không thể lấy chi tiết bài viết',
       });
     }
   };
+
+  const handleLikeArticle = async (item, index) => {
+      const liked = item.reaction === 1 ? 0 : 1; // Thay đổi trạng thái like
+      const originalReaction = item.reaction;
+      const originalNumberReaction = item.number_reaction;
+    
+      try {
+        // Cập nhật giao diện trước để phản hồi nhanh cho người dùng
+        const updatedPosts = [...posts];
+        updatedPosts[index] = {
+          ...item,
+          reaction: liked,
+          number_reaction: item.number_reaction + (liked === 1 ? 1 : -1),
+        };
+        setPosts(updatedPosts);
+    
+        // Gửi yêu cầu lên API
+        const { userId } = await getUserCredentials();
+        await likeArticleApi(userId, item.id, liked);
+    
+        Toast.show({
+          type: 'success',
+          text1: 'Thành công',
+          text2: liked ? 'Đã thích bài viết.' : 'Đã bỏ thích bài viết.',
+        });
+      } catch (error) {
+        console.error('Lỗi khi like bài viết:', error.message);
+    
+        // Hoàn tác nếu có lỗi
+        const revertedPosts = [...posts];
+        revertedPosts[index] = {
+          ...item,
+          reaction: originalReaction,
+          number_reaction: originalNumberReaction,
+        };
+        setPosts(revertedPosts);
+    
+        Toast.show({
+          type: 'error',
+          text1: 'Lỗi',
+          text2: 'Không thể thực hiện thao tác thích bài viết.',
+        });
+      }
+    };  
 
   const initializeData = useCallback(async () => {
     console.log('Initializing...');
@@ -350,43 +384,78 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
     }, [currentUserId, userIdFromRoute, initializeData])
   );
 
-  // Hàm render bài viết
-  const renderPostItem = ({ item }) => {
-    // Kiểm tra xem menu của bài viết hiện tại có đang mở không
+  const renderPostItem = ({ item, index }) => {
+    // Tạo danh sách media (hình ảnh/video)
     const uniqueImages = Array.from(new Set(item.image_article || []));
     const mediaData = [
       ...uniqueImages.map((image) => ({
         type: 'image',
         url: image,
-        key: `post-${item.id}-image-${image}`, 
+        key: `post-${item.id}-image-${image}`,
       })),
       item.video_article
-        ? { type: 'video', url: item.video_article, key: `post-${item.id}-video` } 
+        ? { type: 'video', url: item.video_article, key: `post-${item.id}-video` }
         : null,
     ].filter(Boolean);
-
+  
+    // Kiểm tra xem menu của bài viết có đang mở không
+    const isMenuOpen = activeMenuPostId === item.id;
+  
     return (
       <TouchableOpacity onPress={() => handlePostPress(item.id, item.user_id)}>
         <View style={styles.postItemContainer}>
           {/* Header bài viết */}
           <View style={styles.postHeader}>
-            <Image source={item.user_avatar ? { uri: item.user_avatar } : require('../../../../assets/image/avatar_icon.png')} style={styles.avatarSmall} />
+            <Image
+              source={
+                item.user_avatar
+                  ? { uri: item.user_avatar }
+                  : require('../../../../assets/image/avatar_icon.png')
+              }
+              style={styles.avatarSmall}
+            />
             <Text style={styles.usernamePost}>{item.username}</Text>
             <TouchableOpacity
               style={styles.menuButton}
-              onPress={() => setActiveMenuPostId(activeMenuPostId === item.id ? null : item.id)}
+              onPress={() => setActiveMenuPostId(isMenuOpen ? null : item.id)}
             >
               <Icon name="more-vert" size={24} color="#333" />
             </TouchableOpacity>
           </View>
-
+  
+          {/* Menu Popup */}
+          {isMenuOpen && (
+            <View style={styles.menupostContainer}>
+              <TouchableOpacity
+                style={styles.menupostOption}
+                onPress={() => {
+                  setActiveMenuPostId(null);
+                  handleEditPost(item.id, navigation);
+                }}
+              >
+                <Icon name="edit" size={24} color="#4a90e2" />
+                <Text style={styles.menupostText}>Sửa bài viết</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.menupostOption}
+                onPress={() => {
+                  setActiveMenuPostId(null);
+                  handleDeletePost(item.id);
+                }}
+              >
+                <Icon name="delete" size={24} color="#e74c3c" />
+                <Text style={styles.menupostText}>Xóa bài viết</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+  
           {/* Nội dung bài viết */}
           <Text style={styles.postContent}>{item.content}</Text>
-
+  
           {/* Swiper cho media */}
           {mediaData.length > 0 && (
-            <View style={{ height: 300, marginVertical: 10 }}>
-              <Swiper style={{ height: 300 }} showsPagination loop>
+            <View style={styles.mediaContainer}>
+              <Swiper style={styles.swiper} showsPagination loop>
                 {mediaData.map((media) => (
                   <View key={media.key} style={styles.mediaWrapper}>
                     {media.type === 'image' ? (
@@ -406,22 +475,35 @@ const ProfileOtherUserScreen = ({ route, navigation}) => {
               </Swiper>
             </View>
           )}
-
+  
           {/* Tương tác bài viết */}
           <View style={styles.postInteractionContainer}>
-            <TouchableOpacity style={styles.interactionButton}>
-              <Icon name="favorite-border" size={20} color="#000" />
-              <Text style={styles.interactionText}>{item.likes} Likes</Text>
+            {/* Like Button */}
+            <TouchableOpacity
+              style={styles.interactionButton}
+              onPress={() => handleLikeArticle(item, index)}
+            >
+              <Icon
+                name={item.reaction === 1 ? 'favorite' : 'favorite-border'}
+                size={20}
+                color={item.reaction === 1 ? 'red' : '#000'}
+              />
+              <Text style={styles.interactionText}>{item.number_reaction} Likes</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.interactionButton}>
+  
+            {/* Comment Button */}
+            <TouchableOpacity
+              style={styles.interactionButton}
+              onPress={() => handlePostPress(item.id, item.user_id)} // Chuyển đến chi tiết bài viết
+            >
               <Icon name="chat-bubble-outline" size={20} color="#000" />
-              <Text style={styles.interactionText}>{item.comments} Comments</Text>
+              <Text style={styles.interactionText}>{item.number_comment} Comments</Text>
             </TouchableOpacity>
           </View>
         </View>
       </TouchableOpacity>
     );
-  };
+  };  
 
   const filteredPosts = useMemo(() => {
     if (relationshipStatus === 'friends') {

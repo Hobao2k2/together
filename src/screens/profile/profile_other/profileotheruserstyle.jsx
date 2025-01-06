@@ -400,19 +400,22 @@ const styles = StyleSheet.create({
   },
 
   // Swiper và media
-  mediaWrapper: {
-    width: width * 0.9,
-    height: 300,
-    justifyContent: 'center',
-    alignItems: 'center',
+  mediaContainer: {
+    height: width * 0.56, // Tỷ lệ 16:9 dựa trên chiều rộng màn hình
+    marginBottom: 10,
     borderRadius: 10,
     overflow: 'hidden',
-    backgroundColor: '#f0f0f0',
+  },  
+  mediaWrapper: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   postImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+    borderRadius: 10,
   },
   postVideo: {
     width: '100%',
